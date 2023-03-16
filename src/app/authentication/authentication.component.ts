@@ -12,4 +12,6 @@ export class AuthenticationComponent implements OnInit {
   ngOnInit(): void {
     return;
   }
+// tslint:disable-next-line:no-trailing-whitespace
+  
 }

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthenticationComponent } from './authentication.component';
-import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import {ActivateUserComponent} from './pages/activate-user/activate-user.component';
@@ -18,10 +17,6 @@ const routes: Routes = [
       {
         path: 'register',
         component: RegisterComponent,
-      },
-      {
-        path: 'forgot-password',
-        component: ForgotPasswordComponent,
       },
       {
         path: 'activate-user/:hash',

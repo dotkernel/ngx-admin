@@ -7,13 +7,12 @@ import {AuthService} from '../services/auth.service';
 export class AuthGuard implements CanActivate {
   constructor(
     private router: Router,
-    private authenticationService: AuthService
+    private authenticationService: AuthService,
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     const tokenData = this.authenticationService.tokenData;
     const currentUser = this.authenticationService.currentUserValue;
-    
     if (tokenData) {
       const TOKEN_EXPIRE = tokenData.expires_in * 1000;
       if ((new Date().getTime() - tokenData.timestamp) > TOKEN_EXPIRE) {
