@@ -10,6 +10,7 @@ export class AuthLayoutComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    return;
   }
 
 }
