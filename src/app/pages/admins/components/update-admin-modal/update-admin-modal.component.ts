@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { NbDialogRef } from '@nebular/theme';
 import { Subscription } from 'rxjs';
@@ -8,9 +8,9 @@ import { AdminsService } from '../../admin-service/admins.service';
 @Component({
   selector: 'ngx-update-admin-modal',
   templateUrl: './update-admin-modal.component.html',
-  styleUrls: ['./update-admin-modal.component.scss']
+  styleUrls: ['./update-admin-modal.component.scss'],
 })
-export class UpdateAdminModalComponent implements OnInit {
+export class UpdateAdminModalComponent implements OnInit, OnDestroy {
 
   @Input() adminData: any;
 
@@ -33,21 +33,21 @@ export class UpdateAdminModalComponent implements OnInit {
   adminRoles: any;
   adminRolesObservable: Subscription;
 
-  constructor(protected ref: NbDialogRef<UpdateAdminModalComponent>, 
+  constructor(protected ref: NbDialogRef<UpdateAdminModalComponent>,
     private data: DataManipulationService,
     private adminService: AdminsService) { }
- 
+
 
   cancel() {
     this.ref.close();
   }
 
   onSubmit(event: any) {
-    if(this.newAdminForm.valid) {
+    if (this.newAdminForm.valid) {
       let roleUuid = '';
 
       this.adminRoles.forEach((el) => {
-        if(el.name === this.selectedRole.value) {
+        if (el.name === this.selectedRole.value) {
           roleUuid = el.uuid;
         }
       });
@@ -56,13 +56,12 @@ export class UpdateAdminModalComponent implements OnInit {
         passwordConfirm: this.newAdminForm.value.confirmPassword,
         firstName: this.newAdminForm.value.firstName,
         lastName: this.newAdminForm.value.lastName,
-        roles: [{uuid: roleUuid}]
-      }
+        roles: [{uuid: roleUuid}],
+      };
       this.ref.close(adminValues);
     } else {
       this.data.showToast('warning', 'Error', '');
     }
-    
   }
 
   ngOnInit(): void {
@@ -74,7 +73,7 @@ export class UpdateAdminModalComponent implements OnInit {
     this.adminRolesObservable.unsubscribe();
   }
 
-  setFormValues(adminData){
+  setFormValues(adminData) {
     this.newAdminForm.controls['firstName'].setValue(adminData.firstName);
     this.newAdminForm.controls['lastName'].setValue(adminData.lastName);
     this.newAdminForm.controls['email'].setValue(adminData.identity);

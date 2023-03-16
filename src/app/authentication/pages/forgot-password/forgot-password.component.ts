@@ -15,7 +15,7 @@ export class ForgotPasswordComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-
+    return;
   }
 
 }

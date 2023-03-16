@@ -13,21 +13,21 @@ const routes: Routes = [
     children: [
       {
         path: 'login',
-        component: LoginComponent
+        component: LoginComponent,
       },
       {
         path: 'register',
-        component: RegisterComponent
+        component: RegisterComponent,
       },
       {
         path: 'forgot-password',
-        component: ForgotPasswordComponent
+        component: ForgotPasswordComponent,
       },
       {
         path: 'activate-user/:hash',
-        component: ActivateUserComponent
+        component: ActivateUserComponent,
       },
-    ]
+    ],
   },
   {
     path: '*',
@@ -38,6 +38,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AuthenticationRoutingModule { }

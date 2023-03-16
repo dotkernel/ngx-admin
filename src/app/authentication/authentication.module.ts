@@ -9,6 +9,7 @@ import { ForgotPasswordComponent } from './pages/forgot-password/forgot-password
 import { AuthenticationRoutingModule } from './authentication-routing.module';
 import { LoginComponent } from './pages/login/login.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {RegisterComponent} from './pages/register/register.component';
 
 
 
@@ -18,7 +19,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     AuthLayoutComponent,
     ActivateUserComponent,
     ForgotPasswordComponent,
-    LoginComponent
+    LoginComponent,
+    RegisterComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +32,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     NbSpinnerModule,
     NbLayoutModule,
     NbInputModule,
-  ]
+  ],
 })
 export class AuthenticationModule { }

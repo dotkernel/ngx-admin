@@ -4,7 +4,7 @@ import { NbDialogRef } from '@nebular/theme';
 @Component({
   selector: 'ngx-delete-user-modal',
   templateUrl: './delete-user-modal.component.html',
-  styleUrls: ['./delete-user-modal.component.scss']
+  styleUrls: ['./delete-user-modal.component.scss'],
 })
 export class DeleteUserModalComponent implements OnInit {
 
@@ -13,6 +13,7 @@ export class DeleteUserModalComponent implements OnInit {
   constructor(protected ref: NbDialogRef<DeleteUserModalComponent>) { }
 
   ngOnInit(): void {
+    return;
   }
 
   cancel() {
