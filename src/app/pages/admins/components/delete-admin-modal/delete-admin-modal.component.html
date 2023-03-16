@@ -1,0 +1,11 @@
+<nb-card>
+    <nb-card-header>Admin delete confirmation</nb-card-header>
+    <nb-card-body>
+      <span>Are you sure you want to remove <b>{{adminData.firstName+' '+adminData.lastName }}</b> from the admin list?</span>
+    </nb-card-body>
+    <nb-card-footer class="d-flex justify-content-between">
+        <button nbButton status="success" (click)="submit()">Yes</button>
+        <button class="cancel" nbButton status="danger" (click)="cancel()">No</button>
+    </nb-card-footer>
+</nb-card>
+  

@@ -1,0 +1,73 @@
+<nb-card>
+    <nb-card-header>
+        <div class="d-flex align-items-center justify-content-between">
+            <span>Create new admin</span>
+            <button (click)="cancel()" nbButton shape="round" ghost status="basic"><nb-icon icon="close-outline"></nb-icon></button>
+        </div>
+    </nb-card-header>
+    <nb-card-body>
+      <form [formGroup]="newAdminForm" autocomplete="off">
+        <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputFirstName" class="label">First Name</label>
+                <input type="text" nbInput fullWidth id="inputFirstName" placeholder="First Name" formControlName="firstName">
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputLastName" class="label">Last Name</label>
+                <input type="text" nbInput fullWidth id="inputLastName" placeholder="Last Name" formControlName="lastName">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="inputEmail" class="label">Email</label>
+                  <input type="email" nbInput fullWidth id="inputEmail" placeholder="Email" formControlName="email" autoComplete="none" role="presentation">
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group mt-1 d-flex flex-column justify-content-center">
+                    <label for="adminRole" class="label">Role</label>
+                    <nb-select [selected]="'admin'" [formControl]="selectedRole">
+                        <nb-option *ngFor="let role of adminRoles" [value]="role.name">{{role.name}}</nb-option>
+                  </nb-select>
+                </div>
+              </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="password" class="label">Password</label>
+                <nb-form-field>
+                    <input id="password" [type]="getInputType()" nbInput formControlName="password" autocomplete="off">
+                    <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
+                      <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
+                               pack="eva"
+                               [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
+                      </nb-icon>
+                    </button>
+                </nb-form-field>
+              </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="confirmPassword" class="label">Confirm Password</label>
+                  <nb-form-field>
+                      <input id="confirmPassword" [type]="getInputType()" nbInput formControlName="confirmPassword" autocomplete="off">
+                      <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
+                        <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
+                                 pack="eva"
+                                 [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
+                        </nb-icon>
+                      </button>
+                  </nb-form-field>
+                </div>
+              </div>
+          </div>
+          <button (click)="onSubmit($event)" disabled="{{newAdminForm.invalid}}" nbButton>Submit</button>
+      </form>
+    </nb-card-body>
+  </nb-card>

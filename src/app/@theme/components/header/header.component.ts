@@ -1,10 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { NbMediaBreakpointsService, NbMenuService, NbSidebarService, NbThemeService } from '@nebular/theme';
+import { NbDialogService, NbMediaBreakpointsService, NbMenuService, NbSidebarService, NbThemeService } from '@nebular/theme';
 
-import { UserData } from '../../../@core/data/users';
 import { LayoutService } from '../../../@core/utils';
 import { map, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { AuthService } from '../../../authentication/services/auth.service';
+import { ProfileModalAccountComponent } from '../profile-modal-account/profile-modal-account.component';
+import { ApiWraperService } from '../../../services/api-wraper.service';
 
 @Component({
   selector: 'ngx-header',
@@ -37,31 +39,36 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ];
 
   currentTheme = 'default';
+  currentUser: any;
 
-  userMenu = [ { title: 'Profile' }, { title: 'Log out' } ];
+  userMenu = [ { title: 'Profile', target: 'terget' }, { title: 'Log out' } ];
+
+  currentUserObservable: Subscription;
 
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
               private themeService: NbThemeService,
-              private userService: UserData,
               private layoutService: LayoutService,
-              private breakpointService: NbMediaBreakpointsService) {
+              private dialogService: NbDialogService,
+              private apiWraper: ApiWraperService,
+              private authService: AuthService) 
+  {
+    menuService.onItemClick().subscribe((res) => {
+      if(res.item.title === 'Profile') {
+        this.dialogService.open(ProfileModalAccountComponent, {closeOnBackdropClick : false, autoFocus : false , context: {accountData: this.currentUser}}).onClose.subscribe((res)=> {
+        });
+      }
+      if(res.item.title === 'Log out'){
+        this.authService.logout();
+      }
+    });
   }
 
   ngOnInit() {
     this.currentTheme = this.themeService.currentTheme;
-
-    this.userService.getUsers()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((users: any) => this.user = users.nick);
-
-    const { xl } = this.breakpointService.getBreakpointsMap();
-    this.themeService.onMediaQueryChange()
-      .pipe(
-        map(([, currentBreakpoint]) => currentBreakpoint.width < xl),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((isLessThanXl: boolean) => this.userPictureOnly = isLessThanXl);
+    this.currentUserObservable = this.apiWraper.getCurrentAccount().subscribe((res) => {
+      this.currentUser = res
+    });
 
     this.themeService.onThemeChange()
       .pipe(
