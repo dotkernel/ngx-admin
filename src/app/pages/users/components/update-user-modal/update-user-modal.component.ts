@@ -23,15 +23,12 @@ export class UpdateUserModalComponent implements OnInit, OnDestroy {
       email: new FormControl('', [
         Validators.required]),
       role: new FormControl('', []),
-      password: new FormControl('', [
-        Validators.required]),
-      confirmPassword: new FormControl('', [
-        Validators.required]),
   });
 
-  selectedRole = new FormControl();
   userRoles: any;
   userRolesObservable: Subscription;
+  checkedRoles = [];
+  isRoleChecked:{name:string, show:boolean}[] = [{name: 'guest', show: false},{name: 'user', show: false}];
 
   constructor(protected ref: NbDialogRef<UpdateUserModalComponent>, 
     private data: DataManipulationService,
@@ -44,23 +41,22 @@ export class UpdateUserModalComponent implements OnInit, OnDestroy {
 
   onSubmit(event: any) {
     if(this.newUserForm.valid) {
-      let roleUuid = '';
-
+      let roleUuids = [];
       this.userRoles.forEach((el) => {
-        if(el.name === this.selectedRole.value) {
-          roleUuid = el.uuid;
-        }
+        this.checkedRoles.forEach((role) => {
+          if(el.name === role) {
+            roleUuids.push({uuid : el.uuid});
+          }
+        });
       });
       const userValues = {
-        password: this.newUserForm.value.password,
-        passwordConfirm: this.newUserForm.value.confirmPassword,
         status: 'active',
         detail: {
           firstName: this.newUserForm.value.firstName,
           lastName: this.newUserForm.value.lastName,
           email: this.newUserForm.value.email
         },
-        roles: [{uuid: roleUuid}]
+        roles: roleUuids
       }
       this.ref.close(userValues);
     } else {
@@ -80,9 +76,15 @@ export class UpdateUserModalComponent implements OnInit, OnDestroy {
 
   getUsersRoles() {
     this.userRolesObservable = this.userService.getUsersRoles().subscribe((res) => {
-      const userList = res['_embedded'].roles;
-      this.userRoles = userList;
-      this.selectedRole.setValue(this.userRoles[0].name);
+      this.userRoles = res['_embedded'].roles;
+      this.userData.roles.forEach((el) => {
+        if(el.name === 'user') {
+          this.isRoleChecked[1].show = true;
+        } else {
+          this.isRoleChecked[0].show = true;
+        }
+        this.checkedRoles.push(el.name);
+      });
     });
   }
 
@@ -90,18 +92,28 @@ export class UpdateUserModalComponent implements OnInit, OnDestroy {
     this.newUserForm.controls['firstName'].setValue(userData.detail.firstName);
     this.newUserForm.controls['lastName'].setValue(userData.detail.lastName);
     this.newUserForm.controls['email'].setValue(userData.identity);
-    this.selectedRole.setValue(userData.roles[0].name);
   }
 
-  getInputType() {
-    if (this.showPassword) {
-      return 'text';
+  setUserRole(event: any, roleName) {
+    if(event) {
+      if(this.checkedRoles.length != 0) {
+        this.checkedRoles.forEach((el) => {
+          if(el === roleName) {
+            return;
+          } else {
+            this.checkedRoles.push(roleName);
+          }
+        });
+      } else {
+        this.checkedRoles.push(roleName);
+      }
+    } else if(this.checkedRoles.length) {
+      this.checkedRoles.forEach((el, index)=> {
+        if(el === roleName) {
+          this.checkedRoles.splice(index, 1);
+        }
+      });
     }
-    return 'password';
-  }
-
-  toggleShowPassword() {
-    this.showPassword = !this.showPassword;
   }
 
 }

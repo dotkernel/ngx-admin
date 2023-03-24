@@ -11,13 +11,21 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="inputFirstName" class="label">First Name</label>
-                <input type="text" nbInput fullWidth id="inputFirstName" placeholder="First Name" formControlName="firstName">
+                <input type="text" nbInput fullWidth id="inputFirstName" placeholder="First Name" formControlName="firstName"
+                  [status]="newAdminForm.controls['firstName'].invalid && (newAdminForm.controls['firstName'].dirty || newAdminForm.controls['firstName'].touched) ? 'danger':'basic'">
+                <ng-container *ngIf="newAdminForm.controls['firstName'].invalid && (newAdminForm.controls['firstName'].dirty || newAdminForm.controls['firstName'].touched)">
+                  <p *ngIf="newAdminForm.controls['firstName']?.errors?.['required']" class="caption status-danger mb-0">First name required!</p>
+                </ng-container>
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="inputLastName" class="label">Last Name</label>
-                <input type="text" nbInput fullWidth id="inputLastName" placeholder="Last Name" formControlName="lastName">
+                <input type="text" nbInput fullWidth id="inputLastName" placeholder="Last Name" formControlName="lastName"
+                [status]="newAdminForm.controls['lastName'].invalid && (newAdminForm.controls['lastName'].dirty || newAdminForm.controls['lastName'].touched) ? 'danger':'basic'">
+                <ng-container *ngIf="newAdminForm.controls['lastName'].invalid && (newAdminForm.controls['lastName'].dirty || newAdminForm.controls['lastName'].touched)">
+                  <p *ngIf="newAdminForm.controls['lastName']?.errors?.['required']" class="caption status-danger mb-0">Last name required!</p>
+                </ng-container>
               </div>
             </div>
           </div>
@@ -25,15 +33,20 @@
               <div class="col-sm-6">
                 <div class="form-group">
                   <label for="inputEmail" class="label">Email</label>
-                  <input type="email" nbInput fullWidth id="inputEmail" placeholder="Email" formControlName="email" autoComplete="none" role="presentation">
+                  <input type="email" nbInput fullWidth id="inputEmail" placeholder="Email" formControlName="email" autoComplete="none" role="presentation"
+                  [status]="newAdminForm.controls['email'].invalid && (newAdminForm.controls['email'].dirty || newAdminForm.controls['email'].touched) ? 'danger':'basic'">
+                  <ng-container *ngIf="newAdminForm.controls['email'].invalid && (newAdminForm.controls['email'].dirty || newAdminForm.controls['email'].touched)">
+                    <p *ngIf="newAdminForm.controls['email']?.errors?.['required']" class="caption status-danger mb-0">Email required!</p>
+                    <p *ngIf="newAdminForm.controls['email']?.errors?.['email']" class="caption status-danger mb-0">Email invalid!</p>
+                  </ng-container>
                 </div>
               </div>
               <div class="col-sm-6">
                 <div class="form-group mt-1 d-flex flex-column justify-content-center">
                     <label for="adminRole" class="label">Role</label>
-                    <nb-select [selected]="'admin'" [formControl]="selectedRole">
-                        <nb-option *ngFor="let role of adminRoles" [value]="role.name">{{role.name}}</nb-option>
-                  </nb-select>
+                    <div class="d-flex flex-row align-items-center mt-2 roles-container">
+                      <nb-checkbox *ngFor="let role of adminRoles; first as first" [style]="!first ? 'margin-left:10px':''" (checkedChange)="setAdminRole($event, role.name)">{{role.name}}</nb-checkbox>
+                    </div>
                 </div>
               </div>
           </div>
@@ -42,7 +55,8 @@
               <div class="form-group">
                 <label for="password" class="label">Password</label>
                 <nb-form-field>
-                    <input id="password" [type]="getInputType()" nbInput formControlName="password" autocomplete="off">
+                    <input id="password" [type]="getInputType()" nbInput formControlName="password" autocomplete="off"
+                    [status]="newAdminForm.controls['password'].invalid && (newAdminForm.controls['password'].dirty || newAdminForm.controls['password'].touched) ? 'danger':'basic'">
                     <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
                       <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
                                pack="eva"
@@ -50,13 +64,18 @@
                       </nb-icon>
                     </button>
                 </nb-form-field>
+                <ng-container *ngIf="newAdminForm.controls['password'].invalid && (newAdminForm.controls['password'].dirty || newAdminForm.controls['password'].touched)">
+                  <p *ngIf="newAdminForm.controls['password']?.errors?.['required']" class="caption status-danger mb-0">Password required!</p>
+                  <p *ngIf="newAdminForm.controls['password']?.errors?.['minlength']"class="caption status-danger mb-0">Minimum 6 characters</p>
+                </ng-container>
               </div>
             </div>
             <div class="col-sm-6">
                 <div class="form-group">
                   <label for="confirmPassword" class="label">Confirm Password</label>
                   <nb-form-field>
-                      <input id="confirmPassword" [type]="getInputType()" nbInput formControlName="confirmPassword" autocomplete="off">
+                      <input id="confirmPassword" [type]="getInputType()" nbInput formControlName="confirmPassword" autocomplete="off"
+                      [status]="newAdminForm.controls['confirmPassword'].invalid && (newAdminForm.controls['confirmPassword'].dirty || newAdminForm.controls['confirmPassword'].touched) ? 'danger':'basic'">
                       <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
                         <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
                                  pack="eva"
@@ -64,6 +83,10 @@
                         </nb-icon>
                       </button>
                   </nb-form-field>
+                  <ng-container *ngIf="newAdminForm.controls['confirmPassword'].invalid && (newAdminForm.controls['confirmPassword'].dirty || newAdminForm.controls['confirmPassword'].touched)">
+                    <p *ngIf="newAdminForm.controls['confirmPassword']?.errors?.['required']" class="caption status-danger mb-0">Password required!</p>
+                    <p *ngIf="newAdminForm.controls['confirmPassword']?.errors?.['mustMatch']" class="caption status-danger mb-0">Password mismatched!</p>
+                  </ng-container>
                 </div>
               </div>
           </div>

@@ -31,7 +31,9 @@
             <div class="col-sm-6">
                 <div class="form-group mt-1 d-flex flex-column justify-content-center">
                     <label for="adminRole" class="label">Roles</label>
-                    <input type="text" nbInput fullWidth id="inputRole" placeholder="Roles" [formControl]="selectedRole" readonly>
+                    <div class="d-flex flex-row align-items-center mt-2 roles-container">
+                      <nb-checkbox *ngFor="let role of accountRoles; first as first" [style]="!first ? 'margin-left:10px':''" [checked]="true" disabled>{{role.name}}</nb-checkbox>
+                    </div>
                 </div>
             </div>
           </div>

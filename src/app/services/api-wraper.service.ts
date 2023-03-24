@@ -13,4 +13,8 @@ export class ApiWraperService {
   getCurrentAccount() {
     return this.http.get(this.apiUrl + 'admin/my-account');
   }
+
+  reportError(body) {
+    return this.http.post(this.apiUrl + 'error-report', body);
+  }
 }

@@ -21,8 +21,6 @@ export class AdminDetailRendererComponent implements OnInit, ViewCell {
   
 
   ngOnInit(): void {
-    console.log(this.rowData);
-
     this.adminRoles = this.rowData.roles;
   }
 

@@ -120,14 +120,23 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   createNewUser() {
-    this.dialogService.open(CreateNewUserModalComponent).onClose.subscribe((res) => {
+    this.dialogService.open(CreateNewUserModalComponent, {closeOnBackdropClick : false, autoFocus: false}).onClose.subscribe((res) => {
       if(res) {
         console.log(res);
         this.newUserObservable = this.userDataService.createNewUser(res).subscribe((res) => {
-          this.data.showToast('success', 'User added.', '');
+          this.data.showToast('success', 'Success!', 'User has been added.');
           this.getUserList();
         }, (err) => {
-          this.data.showToast('warning', 'Somthing went wrong', '')
+          console.log(err);
+          if(err.detail.email.isEmpty != ''){
+            this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
+          }
+          if(err.password.stringLengthTooShort != ''){
+            this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+          }
+          if(err.passwordConfirm.isEmpty != ''){
+            this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+          }
         });
       }
     });
@@ -138,7 +147,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.dialogService.open(UpdateUserModalComponent, {closeOnBackdropClick : false, autoFocus : false , context: {userData: userData}}).onClose.subscribe((res) => {
       if(res) {
         this.updateUserObservable = this.userDataService.updateUser(res, userData.uuid).subscribe((res) => {
-          this.data.showToast('success', 'User updated.', '');
+          this.data.showToast('success','Success!', 'User has been updated.');
           this.getUserList();
         }, (err) => {
           this.data.showToast('warning', 'Somthing went wrong', '')
@@ -149,8 +158,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   deleteUser(event) {
     const userData = event.data;
-    console.log(userData);
-    
     this.dialogService.open(DeleteUserModalComponent, {closeOnBackdropClick : false, autoFocus : false , context: {userData: userData}}).onClose.subscribe((res) => {
       if(res) {
         this.deleteUserObservable = this.userDataService.deleteUser(userData.uuid).subscribe((res) => {

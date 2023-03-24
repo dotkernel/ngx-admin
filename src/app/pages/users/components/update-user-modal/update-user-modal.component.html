@@ -31,39 +31,9 @@
               <div class="col-sm-6">
                 <div class="form-group mt-1 d-flex flex-column justify-content-center">
                     <label for="adminRole" class="label">Role</label>
-                    <nb-select [selected]="'admin'" [formControl]="selectedRole">
-                        <nb-option *ngFor="let role of userRoles" [value]="role.name">{{role.name}}</nb-option>
-                  </nb-select>
-                </div>
-              </div>
-          </div>
-          <div class="row">
-            <div class="col-sm-6">
-              <div class="form-group">
-                <label for="password" class="label">Password</label>
-                <nb-form-field>
-                    <input id="password" [type]="getInputType()" nbInput formControlName="password" autocomplete="off">
-                    <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
-                      <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
-                               pack="eva"
-                               [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
-                      </nb-icon>
-                    </button>
-                </nb-form-field>
-              </div>
-            </div>
-            <div class="col-sm-6">
-                <div class="form-group">
-                  <label for="confirmPassword" class="label">Confirm Password</label>
-                  <nb-form-field>
-                      <input id="confirmPassword" [type]="getInputType()" nbInput formControlName="confirmPassword" autocomplete="off">
-                      <button nbSuffix nbButton ghost (click)="toggleShowPassword()">
-                        <nb-icon [icon]="showPassword ? 'eye-outline' : 'eye-off-2-outline'"
-                                 pack="eva"
-                                 [attr.aria-label]="showPassword ? 'hide password' : 'show password'">
-                        </nb-icon>
-                      </button>
-                  </nb-form-field>
+                    <div class="d-flex flex-row align-items-center mt-2 roles-container">
+                      <nb-checkbox *ngFor="let role of userRoles; let i = index; first as first" [style]="!first ? 'margin-left:10px':''" (checkedChange)="setUserRole($event, role.name)" [checked]="isRoleChecked[i].show">{{role.name}}</nb-checkbox>
+                    </div>
                 </div>
               </div>
           </div>

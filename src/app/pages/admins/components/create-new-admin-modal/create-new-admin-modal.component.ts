@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NbDialogRef } from '@nebular/theme';
 import { Subscription } from 'rxjs';
+import { MustMatch } from '../../../../helpers/must-match.validator';
 import { DataManipulationService } from '../../../../services/data-manipulation.service';
 import { AdminsService } from '../../admin-service/admins.service';
 
@@ -13,27 +14,31 @@ import { AdminsService } from '../../admin-service/admins.service';
 export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
 
   showPassword: boolean;
-  newAdminForm = new FormGroup({
-    firstName: new FormControl('', [
-      Validators.required]),
-      lastName: new FormControl('', [
-      Validators.required]),
-      email: new FormControl('', [
-        Validators.required]),
-      role: new FormControl('', []),
-      password: new FormControl('', [
-        Validators.required]),
-      confirmPassword: new FormControl('', [
-        Validators.required]),
-  });
+  newAdminForm: FormGroup;
 
   selectedRole = new FormControl();
   adminRoles: any;
+  checkedRoles = [];
   adminRolesObservable: Subscription;
 
   constructor(protected ref: NbDialogRef<CreateNewAdminModalComponent>, 
     private data: DataManipulationService,
-    private adminService: AdminsService) { }
+    private adminService: AdminsService,
+    private formBuilder: FormBuilder) {
+      this.newAdminForm = this.formBuilder.group({
+        firstName: new FormControl('', [
+          Validators.required]),
+          lastName: new FormControl('', [
+          Validators.required]),
+          email: new FormControl('', [
+            Validators.required, Validators.email]),
+          role: new FormControl('', []),
+          password: new FormControl('', [
+            Validators.required, Validators.minLength(6)]),
+          confirmPassword: new FormControl('', [
+            Validators.required]),
+      }, {validator: MustMatch('password','confirmPassword')});
+    }
  
 
   cancel() {
@@ -42,12 +47,13 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
 
   onSubmit(event: any) {
     if(this.newAdminForm.valid) {
-      let roleUuid = '';
-
+      let roleUuids = [];
       this.adminRoles.forEach((el) => {
-        if(el.name === this.selectedRole.value) {
-          roleUuid = el.uuid;
-        }
+        this.checkedRoles.forEach((role) => {
+          if(el.name === role) {
+            roleUuids.push({uuid : el.uuid});
+          }
+        });
       });
       const adminValues = {
         identity: this.newAdminForm.value.email,
@@ -55,11 +61,11 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
         passwordConfirm: this.newAdminForm.value.confirmPassword,
         firstName: this.newAdminForm.value.firstName,
         lastName: this.newAdminForm.value.lastName,
-        roles: [{uuid: roleUuid}]
+        roles: roleUuids
       }
       this.ref.close(adminValues);
     } else {
-      this.data.showToast('warning', 'Error', '');
+      this.data.showToast('warning', 'The form is invalid!', '');
     }
     
   }
@@ -76,7 +82,6 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
     this.adminRolesObservable = this.adminService.getAdminRoles().subscribe((res) => {
       const adminList = res['_embedded'].roles;
       this.adminRoles = adminList;
-      this.selectedRole.setValue(this.adminRoles[0].name);
     });
   }
 
@@ -91,4 +96,17 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
     this.showPassword = !this.showPassword;
   }
 
+  setAdminRole(event: any, roleName) {
+    if(event) {
+      this.checkedRoles.push(roleName);
+    } else {
+      if(this.checkedRoles.length) {
+        this.checkedRoles.forEach((el, index)=> {
+          if(el === roleName) {
+            this.checkedRoles.splice(index, 1);
+          }
+        });
+      }
+    }
+  }
 }

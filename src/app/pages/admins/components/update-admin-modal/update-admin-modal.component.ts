@@ -23,15 +23,12 @@ export class UpdateAdminModalComponent implements OnInit, OnDestroy {
       email: new FormControl('', [
         Validators.required]),
       role: new FormControl('', []),
-      password: new FormControl('', [
-        Validators.required]),
-      confirmPassword: new FormControl('', [
-        Validators.required]),
   });
 
-  selectedRole = new FormControl();
   adminRoles: any;
   adminRolesObservable: Subscription;
+  checkedRoles = [];
+  isRoleChecked:{name:string, show:boolean}[] = [{name: 'admin', show: false},{name: 'superuser', show: false}];
 
   constructor(protected ref: NbDialogRef<UpdateAdminModalComponent>,
     private data: DataManipulationService,
@@ -44,19 +41,18 @@ export class UpdateAdminModalComponent implements OnInit, OnDestroy {
 
   onSubmit(event: any) {
     if (this.newAdminForm.valid) {
-      let roleUuid = '';
-
+      let roleUuids = [];
       this.adminRoles.forEach((el) => {
-        if (el.name === this.selectedRole.value) {
-          roleUuid = el.uuid;
-        }
+        this.checkedRoles.forEach((role) => {
+          if(el.name === role) {
+            roleUuids.push({uuid : el.uuid});
+          }
+        });
       });
       const adminValues = {
-        password: this.newAdminForm.value.password,
-        passwordConfirm: this.newAdminForm.value.confirmPassword,
         firstName: this.newAdminForm.value.firstName,
         lastName: this.newAdminForm.value.lastName,
-        roles: [{uuid: roleUuid}],
+        roles: roleUuids,
       };
       this.ref.close(adminValues);
     } else {
@@ -77,25 +73,42 @@ export class UpdateAdminModalComponent implements OnInit, OnDestroy {
     this.newAdminForm.controls['firstName'].setValue(adminData.firstName);
     this.newAdminForm.controls['lastName'].setValue(adminData.lastName);
     this.newAdminForm.controls['email'].setValue(adminData.identity);
-    this.selectedRole.setValue(adminData.roles[0].name);
   }
 
   getAdminRoles() {
     this.adminRolesObservable = this.adminService.getAdminRoles().subscribe((res) => {
-      const adminList = res['_embedded'].roles;
-      this.adminRoles = adminList;
+      this.adminRoles = res['_embedded'].roles;
+      this.adminData.roles.forEach((el) => {
+        if(el.name === 'admin') {
+          this.isRoleChecked[0].show = true;
+        } else {
+          this.isRoleChecked[1].show = true;
+        }
+        this.checkedRoles.push(el.name);
+      });
     });
   }
 
-  getInputType() {
-    if (this.showPassword) {
-      return 'text';
+  setAdminRole(event: any, roleName) {
+    if(event) {
+      if(this.checkedRoles.length != 0) {
+        this.checkedRoles.forEach((el) => {
+          if(el === roleName) {
+            return;
+          } else {
+            this.checkedRoles.push(roleName);
+          }
+        });
+      } else {
+        this.checkedRoles.push(roleName);
+      }
+    } else if(this.checkedRoles.length) {
+      this.checkedRoles.forEach((el, index)=> {
+        if(el === roleName) {
+          this.checkedRoles.splice(index, 1);
+        }
+      });
     }
-    return 'password';
-  }
-
-  toggleShowPassword() {
-    this.showPassword = !this.showPassword;
   }
 
 }

@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NbDialogRef } from '@nebular/theme';
 import { Subscription } from 'rxjs';
+import { MustMatch } from '../../../../helpers/must-match.validator';
 import { DataManipulationService } from '../../../../services/data-manipulation.service';
 import { UserServiceService } from '../../user-service/user-service.service';
 
@@ -13,27 +14,31 @@ import { UserServiceService } from '../../user-service/user-service.service';
 export class CreateNewUserModalComponent implements OnInit, OnDestroy {
 
   showPassword: boolean;
-  newUserForm = new FormGroup({
-    firstName: new FormControl('', [
-      Validators.required]),
-      lastName: new FormControl('', [
-      Validators.required]),
-      email: new FormControl('', [
-        Validators.required]),
-      role: new FormControl('', []),
-      password: new FormControl('', [
-        Validators.required]),
-      confirmPassword: new FormControl('', [
-        Validators.required]),
-  });
+  newUserForm: FormGroup;
 
   selectedRole = new FormControl();
   userRoles: any;
   adminRolesObservable: Subscription;
+  checkedRoles = [];
 
   constructor(protected ref: NbDialogRef<CreateNewUserModalComponent>, 
     private data: DataManipulationService,
-    private userService: UserServiceService) { }
+    private userService: UserServiceService,
+    private formBuilder: FormBuilder) {
+      this.newUserForm = this.formBuilder.group({
+        firstName: new FormControl('', [
+          Validators.required]),
+          lastName: new FormControl('', [
+          Validators.required]),
+          email: new FormControl('', [
+            Validators.required, Validators.email]),
+          role: new FormControl('', []),
+          password: new FormControl('', [
+            Validators.required, Validators.minLength(6)]),
+          confirmPassword: new FormControl('', [
+            Validators.required]),
+      }, {validator: MustMatch('password','confirmPassword')});
+    }
  
 
   cancel() {
@@ -42,12 +47,13 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
 
   onSubmit(event: any) {
     if(this.newUserForm.valid) {
-      let roleUuid = '';
-
+      let roleUuids = [];
       this.userRoles.forEach((el) => {
-        if(el.name === this.selectedRole.value) {
-          roleUuid = el.uuid;
-        }
+        this.checkedRoles.forEach((role) => {
+          if(el.name === role) {
+            roleUuids.push({uuid : el.uuid});
+          }
+        });
       });
       const userValues = {
         identity: this.newUserForm.value.email,
@@ -59,11 +65,11 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
           lastName: this.newUserForm.value.lastName,
           email: this.newUserForm.value.email
         },
-        roles: [{uuid: roleUuid}]
+        roles: roleUuids
       }
       this.ref.close(userValues);
     } else {
-      this.data.showToast('warning', 'Error', '');
+      this.data.showToast('warning', 'The form is invalid!', '');
     }
     
   }
@@ -80,7 +86,6 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
     this.adminRolesObservable = this.userService.getUsersRoles().subscribe((res) => {
       const userList = res['_embedded'].roles;
       this.userRoles = userList;
-      this.selectedRole.setValue(this.userRoles[0].name);
     });
   }
 
@@ -95,4 +100,17 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
     this.showPassword = !this.showPassword;
   }
 
+  setUserRole(event: any, roleName) {
+    if(event) {
+      this.checkedRoles.push(roleName);
+    } else {
+      if(this.checkedRoles.length) {
+        this.checkedRoles.forEach((el, index)=> {
+          if(el === roleName) {
+            this.checkedRoles.splice(index, 1);
+          }
+        });
+      }
+    }
+  }
 }

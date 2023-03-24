@@ -80,19 +80,18 @@ export class AdminsComponent implements OnInit, OnDestroy {
     },
   };
 
-
   source: LocalDataSource = new LocalDataSource();
   adminListObservable: Subscription;
   newAdminObservable: Subscription;
   deleteAdminObservable: Subscription;
   updateAdminObservable: Subscription;
+  reportErrorObservable: Subscription;
   adminRoles: any;
 
   constructor(private adminDataService: AdminsService, 
     public data: DataManipulationService,
-    private dialogService: NbDialogService) {
-    
-   }
+    private dialogService: NbDialogService,
+    private apiWraper: ApiWraperService) {}
 
   ngOnInit(): void {
     this.getAdminList();
@@ -111,16 +110,34 @@ export class AdminsComponent implements OnInit, OnDestroy {
     this.newAdminObservable?.unsubscribe();
     this.updateAdminObservable?.unsubscribe();
     this.deleteAdminObservable?.unsubscribe();
+    this.reportErrorObservable?.unsubscribe();
   }
 
   createNewAdmin() {
-    this.dialogService.open(CreateNewAdminModalComponent).onClose.subscribe((res) => {
+    this.dialogService.open(CreateNewAdminModalComponent, {closeOnBackdropClick : false, autoFocus: false}).onClose.subscribe((res) => {
       if(res) {
         this.newAdminObservable = this.adminDataService.createNewAdmin(res).subscribe((res) => {
-          this.data.showToast('success', 'Admin added.', '');
+          this.data.showToast('success','Success!', 'Admin has been added.');
           this.getAdminList();
         }, (err) => {
-          this.data.showToast('warning', 'Something went wrong', '')
+          if(err.firstName.isEmpty != ''){
+            this.data.showToast('warning', 'First name inputfield error!', err.firstName.isEmpty);
+          }
+          if(err.lastName.isEmpty != ''){
+            this.data.showToast('warning', 'Last name inputfield error!', err.lastName.isEmpty);
+          }
+          if(err.identity.isEmpty != ''){
+            this.data.showToast('warning', 'Email inputfield error!', err.identity.isEmpty);
+          }
+          if(err.roles[0].isEmpty != ''){
+            this.data.showToast('warning', 'Roles inputfield error!', err.roles[0].isEmpty);
+          }
+          if(err.password.stringLengthTooShort != ''){
+            this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+          }
+          if(err.passwordConfirm.isEmpty != ''){
+            this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+          }
         });
       }
     });
@@ -132,7 +149,7 @@ export class AdminsComponent implements OnInit, OnDestroy {
     this.dialogService.open(UpdateAdminModalComponent, {closeOnBackdropClick : false, autoFocus : false , context: {adminData: adminData}}).onClose.subscribe((res) => {
       if(res) {
         this.updateAdminObservable = this.adminDataService.updateAdmin(res, adminData.uuid).subscribe((res) => {
-          this.data.showToast('success', 'Admin updated.', '');
+          this.data.showToast('success', 'Success!', 'Admin has been updated.');
           this.getAdminList();
         }, (err) => {
           this.data.showToast('warning', 'Something went wrong', '')
@@ -146,10 +163,10 @@ export class AdminsComponent implements OnInit, OnDestroy {
     this.dialogService.open(DeleteAdminModalComponent, {closeOnBackdropClick : false, autoFocus : false , context: {adminData: adminData}}).onClose.subscribe((res) => {
       if(res) {
         this.deleteAdminObservable = this.adminDataService.deleteAdmin(adminData.uuid).subscribe((res) => {
-          this.data.showToast('success', 'Admin removed.', '');
+          this.data.showToast('success','Success!', 'Admin has been removed.');
           this.getAdminList();
         }, (err) => {
-          this.data.showToast('warning', err, '');
+          this.data.showToast('warning', 'Warning', 'Couldnt delete the selected admin.');
         });
       }
     });

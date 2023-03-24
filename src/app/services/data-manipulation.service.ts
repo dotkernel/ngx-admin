@@ -18,7 +18,7 @@ export class DataManipulationService {
 
   config: NbToastrConfig;
   destroyByClick = true;
-  duration = 2000;
+  duration = 3000;
   hasIcon = true;
   preventDuplicates = false;
   position: NbGlobalPosition = NbGlobalPhysicalPosition.TOP_RIGHT;
@@ -35,6 +35,6 @@ export class DataManipulationService {
     };
     const titleContent = title ? `${title}` : '';
    
-    this.toastrService.show('', titleContent, config);
+    this.toastrService.show(body, titleContent, config);
   }
 }

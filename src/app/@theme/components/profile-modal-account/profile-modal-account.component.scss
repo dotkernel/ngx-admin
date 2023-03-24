@@ -1,0 +1,11 @@
+:host::ng-deep {
+    .roles-container {
+        .custom-checkbox.checked {
+            background-color: #598BFF !important;
+        }
+
+        .text {
+            color: #000000 !important;
+        }
+    }
+}
