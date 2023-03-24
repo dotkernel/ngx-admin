@@ -2893,23 +2893,37 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "ProfileModalAccountComponent": () => (/* binding */ ProfileModalAccountComponent)
 /* harmony export */ });
-/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/forms */ 2508);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ 2560);
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/forms */ 2508);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ 2560);
 /* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @nebular/theme */ 6953);
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/common */ 4666);
 
 
 
 
+
+function ProfileModalAccountComponent_nb_checkbox_31_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "nb-checkbox", 17);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+} if (rf & 2) {
+    const role_r1 = ctx.$implicit;
+    const first_r2 = ctx.first;
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵstyleMap"](!first_r2 ? "margin-left:10px" : "");
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("checked", true);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtextInterpolate"](role_r1.name);
+} }
 class ProfileModalAccountComponent {
     constructor(ref) {
         this.ref = ref;
-        this.accountForm = new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormGroup({
-            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControl('', []),
-            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControl('', []),
-            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControl('', []),
-            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControl('', [])
+        this.accountForm = new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormGroup({
+            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControl('', []),
+            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControl('', []),
+            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControl('', []),
+            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControl('', [])
         });
-        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControl();
+        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControl();
     }
     cancel() {
         this.ref.close();
@@ -2937,41 +2951,42 @@ class ProfileModalAccountComponent {
         this.selectedRole.setValue(accRole);
     }
 }
-ProfileModalAccountComponent.ɵfac = function ProfileModalAccountComponent_Factory(t) { return new (t || ProfileModalAccountComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbDialogRef)); };
-ProfileModalAccountComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵdefineComponent"]({ type: ProfileModalAccountComponent, selectors: [["ngx-profile-modal-account"]], inputs: { accountData: "accountData" }, decls: 31, vars: 2, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], [3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", "readonly", ""], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", "readonly", ""], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "readonly", ""], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputRole", "placeholder", "Roles", "readonly", "", 3, "formControl"]], template: function ProfileModalAccountComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](4, "Account Details");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](5, "button", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵlistener"]("click", function ProfileModalAccountComponent_Template_button_click_5_listener() { return ctx.cancel(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](6, "nb-icon", 2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](13, "First Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](14, "input", 8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](15, "div", 5)(16, "div", 6)(17, "label", 9);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](18, "Last Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](19, "input", 10);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](20, "div", 4)(21, "div", 5)(22, "div", 6)(23, "label", 11);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](24, "Email");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](25, "input", 12);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵtext"](29, "Roles");
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelement"](30, "input", 15);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵelementEnd"]()()()()()();
+ProfileModalAccountComponent.ɵfac = function ProfileModalAccountComponent_Factory(t) { return new (t || ProfileModalAccountComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbDialogRef)); };
+ProfileModalAccountComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: ProfileModalAccountComponent, selectors: [["ngx-profile-modal-account"]], inputs: { accountData: "accountData" }, decls: 32, vars: 2, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], [3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", "readonly", ""], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", "readonly", ""], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "readonly", ""], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], ["disabled", "", 3, "style", "checked", 4, "ngFor", "ngForOf"], ["disabled", "", 3, "checked"]], template: function ProfileModalAccountComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](4, "Account Details");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](5, "button", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵlistener"]("click", function ProfileModalAccountComponent_Template_button_click_5_listener() { return ctx.cancel(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](6, "nb-icon", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](13, "First Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](14, "input", 8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](15, "div", 5)(16, "div", 6)(17, "label", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](18, "Last Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](19, "input", 10);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](20, "div", 4)(21, "div", 5)(22, "div", 6)(23, "label", 11);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](24, "Email");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](25, "input", 12);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](29, "Roles");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](30, "div", 15);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtemplate"](31, ProfileModalAccountComponent_nb_checkbox_31_Template, 2, 4, "nb-checkbox", 16);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]()()()()()()();
     } if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵproperty"]("formGroup", ctx.accountForm);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵadvance"](22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵproperty"]("formControl", ctx.selectedRole);
-    } }, dependencies: [_nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbInputDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_0__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_0__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_0__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_0__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControlDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_0__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJwcm9maWxlLW1vZGFsLWFjY291bnQuY29tcG9uZW50LnNjc3MifQ== */"] });
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("formGroup", ctx.accountForm);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵadvance"](23);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵproperty"]("ngForOf", ctx.accountRoles);
+    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_3__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_2__.NbCheckboxComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_1__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_1__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_1__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_1__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_1__.FormControlName], styles: ["[_nghost-%COMP%]  .roles-container .custom-checkbox.checked {\n  background-color: #598BFF !important;\n}\n[_nghost-%COMP%]  .roles-container .text {\n  color: #000000 !important;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByb2ZpbGUtbW9kYWwtYWNjb3VudC5jb21wb25lbnQuc2NzcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFFUTtFQUNJLG9DQUFBO0FBRFo7QUFJUTtFQUNJLHlCQUFBO0FBRloiLCJmaWxlIjoicHJvZmlsZS1tb2RhbC1hY2NvdW50LmNvbXBvbmVudC5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiOmhvc3Q6Om5nLWRlZXAge1xyXG4gICAgLnJvbGVzLWNvbnRhaW5lciB7XHJcbiAgICAgICAgLmN1c3RvbS1jaGVja2JveC5jaGVja2VkIHtcclxuICAgICAgICAgICAgYmFja2dyb3VuZC1jb2xvcjogIzU5OEJGRiAhaW1wb3J0YW50O1xyXG4gICAgICAgIH1cclxuXHJcbiAgICAgICAgLnRleHQge1xyXG4gICAgICAgICAgICBjb2xvcjogIzAwMDAwMCAhaW1wb3J0YW50O1xyXG4gICAgICAgIH1cclxuICAgIH1cclxufSJdfQ== */"] });
 
 
 /***/ }),
@@ -4518,7 +4533,8 @@ const NB_MODULES = [
     _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbIconModule,
     _nebular_eva_icons__WEBPACK_IMPORTED_MODULE_10__.NbEvaIconsModule,
     _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCardModule,
-    _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbInputModule
+    _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbInputModule,
+    _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule
 ];
 const COMPONENTS = [
     _components__WEBPACK_IMPORTED_MODULE_0__.HeaderComponent,
@@ -4572,7 +4588,8 @@ ThemeModule.ɵinj = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_11__["�
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbIconModule,
         _nebular_eva_icons__WEBPACK_IMPORTED_MODULE_10__.NbEvaIconsModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCardModule,
-        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbInputModule, _angular_forms__WEBPACK_IMPORTED_MODULE_13__.ReactiveFormsModule], exports: [_angular_common__WEBPACK_IMPORTED_MODULE_12__.CommonModule, _pipes__WEBPACK_IMPORTED_MODULE_1__.CapitalizePipe,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbInputModule,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule, _angular_forms__WEBPACK_IMPORTED_MODULE_13__.ReactiveFormsModule], exports: [_angular_common__WEBPACK_IMPORTED_MODULE_12__.CommonModule, _pipes__WEBPACK_IMPORTED_MODULE_1__.CapitalizePipe,
         _pipes__WEBPACK_IMPORTED_MODULE_1__.PluralPipe,
         _pipes__WEBPACK_IMPORTED_MODULE_1__.RoundPipe,
         _pipes__WEBPACK_IMPORTED_MODULE_1__.TimingPipe,
@@ -5069,6 +5086,9 @@ class ApiWraperService {
     }
     getCurrentAccount() {
         return this.http.get(this.apiUrl + 'admin/my-account');
+    }
+    reportError(body) {
+        return this.http.post(this.apiUrl + 'error-report', body);
     }
 }
 ApiWraperService.ɵfac = function ApiWraperService_Factory(t) { return new (t || ApiWraperService)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_angular_common_http__WEBPACK_IMPORTED_MODULE_2__.HttpClient)); };

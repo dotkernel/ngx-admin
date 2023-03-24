@@ -1,5 +1,38 @@
 (self["webpackChunkngx_admin_demo"] = self["webpackChunkngx_admin_demo"] || []).push([["src_app_pages_pages_module_ts"],{
 
+/***/ 4184:
+/*!*************************************************!*\
+  !*** ./src/app/helpers/must-match.validator.ts ***!
+  \*************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "MustMatch": () => (/* binding */ MustMatch)
+/* harmony export */ });
+// custom validator to check that two fields match
+function MustMatch(controlName, matchingControlName) {
+    return (formGroup) => {
+        const control = formGroup.controls[controlName];
+        const matchingControl = formGroup.controls[matchingControlName];
+        if (matchingControl.errors && !matchingControl.errors['mustMatch']) {
+            // return if another validator has already found an error on the matchingControl
+            return;
+        }
+        // set error on matchingControl if validation fails
+        if (control.value !== matchingControl.value) {
+            matchingControl.setErrors({ mustMatch: true });
+        }
+        else {
+            matchingControl.setErrors(null);
+        }
+    };
+}
+
+
+/***/ }),
+
 /***/ 9918:
 /*!**************************************************************!*\
   !*** ./src/app/pages/admins/admin-service/admins.service.ts ***!
@@ -55,15 +88,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "AdminsComponent": () => (/* binding */ AdminsComponent)
 /* harmony export */ });
-/* harmony import */ var ng2_smart_table__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ng2-smart-table */ 6819);
+/* harmony import */ var ng2_smart_table__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ng2-smart-table */ 6819);
 /* harmony import */ var _components_admin_detail_renderer_admin_detail_renderer_component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./components/admin-detail-renderer/admin-detail-renderer.component */ 8087);
 /* harmony import */ var _components_create_new_admin_modal_create_new_admin_modal_component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/create-new-admin-modal/create-new-admin-modal.component */ 3568);
 /* harmony import */ var _components_delete_admin_modal_delete_admin_modal_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/delete-admin-modal/delete-admin-modal.component */ 9577);
 /* harmony import */ var _components_update_admin_modal_update_admin_modal_component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/update-admin-modal/update-admin-modal.component */ 2010);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @angular/core */ 2560);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @angular/core */ 2560);
 /* harmony import */ var _admin_service_admins_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./admin-service/admins.service */ 9918);
 /* harmony import */ var _services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../services/data-manipulation.service */ 8510);
-/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @nebular/theme */ 6953);
+/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @nebular/theme */ 6953);
+/* harmony import */ var _services_api_wraper_service__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../services/api-wraper.service */ 8822);
+
 
 
 
@@ -76,10 +111,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class AdminsComponent {
-    constructor(adminDataService, data, dialogService) {
+    constructor(adminDataService, data, dialogService, apiWraper) {
         this.adminDataService = adminDataService;
         this.data = data;
         this.dialogService = dialogService;
+        this.apiWraper = apiWraper;
         this.settings = {
             mode: 'external',
             add: {
@@ -142,7 +178,7 @@ class AdminsComponent {
                 },
             },
         };
-        this.source = new ng2_smart_table__WEBPACK_IMPORTED_MODULE_6__.LocalDataSource();
+        this.source = new ng2_smart_table__WEBPACK_IMPORTED_MODULE_7__.LocalDataSource();
     }
     ngOnInit() {
         this.getAdminList();
@@ -159,15 +195,33 @@ class AdminsComponent {
         this.newAdminObservable?.unsubscribe();
         this.updateAdminObservable?.unsubscribe();
         this.deleteAdminObservable?.unsubscribe();
+        this.reportErrorObservable?.unsubscribe();
     }
     createNewAdmin() {
-        this.dialogService.open(_components_create_new_admin_modal_create_new_admin_modal_component__WEBPACK_IMPORTED_MODULE_1__.CreateNewAdminModalComponent).onClose.subscribe((res) => {
+        this.dialogService.open(_components_create_new_admin_modal_create_new_admin_modal_component__WEBPACK_IMPORTED_MODULE_1__.CreateNewAdminModalComponent, { closeOnBackdropClick: false, autoFocus: false }).onClose.subscribe((res) => {
             if (res) {
                 this.newAdminObservable = this.adminDataService.createNewAdmin(res).subscribe((res) => {
-                    this.data.showToast('success', 'Admin added.', '');
+                    this.data.showToast('success', 'Success!', 'Admin has been added.');
                     this.getAdminList();
                 }, (err) => {
-                    this.data.showToast('warning', 'Something went wrong', '');
+                    if (err.firstName.isEmpty != '') {
+                        this.data.showToast('warning', 'First name inputfield error!', err.firstName.isEmpty);
+                    }
+                    if (err.lastName.isEmpty != '') {
+                        this.data.showToast('warning', 'Last name inputfield error!', err.lastName.isEmpty);
+                    }
+                    if (err.identity.isEmpty != '') {
+                        this.data.showToast('warning', 'Email inputfield error!', err.identity.isEmpty);
+                    }
+                    if (err.roles[0].isEmpty != '') {
+                        this.data.showToast('warning', 'Roles inputfield error!', err.roles[0].isEmpty);
+                    }
+                    if (err.password.stringLengthTooShort != '') {
+                        this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+                    }
+                    if (err.passwordConfirm.isEmpty != '') {
+                        this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+                    }
                 });
             }
         });
@@ -177,7 +231,7 @@ class AdminsComponent {
         this.dialogService.open(_components_update_admin_modal_update_admin_modal_component__WEBPACK_IMPORTED_MODULE_3__.UpdateAdminModalComponent, { closeOnBackdropClick: false, autoFocus: false, context: { adminData: adminData } }).onClose.subscribe((res) => {
             if (res) {
                 this.updateAdminObservable = this.adminDataService.updateAdmin(res, adminData.uuid).subscribe((res) => {
-                    this.data.showToast('success', 'Admin updated.', '');
+                    this.data.showToast('success', 'Success!', 'Admin has been updated.');
                     this.getAdminList();
                 }, (err) => {
                     this.data.showToast('warning', 'Something went wrong', '');
@@ -190,27 +244,27 @@ class AdminsComponent {
         this.dialogService.open(_components_delete_admin_modal_delete_admin_modal_component__WEBPACK_IMPORTED_MODULE_2__.DeleteAdminModalComponent, { closeOnBackdropClick: false, autoFocus: false, context: { adminData: adminData } }).onClose.subscribe((res) => {
             if (res) {
                 this.deleteAdminObservable = this.adminDataService.deleteAdmin(adminData.uuid).subscribe((res) => {
-                    this.data.showToast('success', 'Admin removed.', '');
+                    this.data.showToast('success', 'Success!', 'Admin has been removed.');
                     this.getAdminList();
                 }, (err) => {
-                    this.data.showToast('warning', err, '');
+                    this.data.showToast('warning', 'Warning', 'Couldnt delete the selected admin.');
                 });
             }
         });
     }
 }
-AdminsComponent.ɵfac = function AdminsComponent_Factory(t) { return new (t || AdminsComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_4__.AdminsService), _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_5__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbDialogService)); };
-AdminsComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵdefineComponent"]({ type: AdminsComponent, selectors: [["ngx-admins"]], decls: 5, vars: 2, consts: [[3, "settings", "source", "create", "edit", "delete"]], template: function AdminsComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header");
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵtext"](2, " Admins Table ");
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵelementStart"](3, "nb-card-body")(4, "ng2-smart-table", 0);
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵlistener"]("create", function AdminsComponent_Template_ng2_smart_table_create_4_listener() { return ctx.createNewAdmin(); })("edit", function AdminsComponent_Template_ng2_smart_table_edit_4_listener($event) { return ctx.editAdmin($event); })("delete", function AdminsComponent_Template_ng2_smart_table_delete_4_listener($event) { return ctx.deleteAdmin($event); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵelementEnd"]()()();
+AdminsComponent.ɵfac = function AdminsComponent_Factory(t) { return new (t || AdminsComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_4__.AdminsService), _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_5__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_9__.NbDialogService), _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵdirectiveInject"](_services_api_wraper_service__WEBPACK_IMPORTED_MODULE_6__.ApiWraperService)); };
+AdminsComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵdefineComponent"]({ type: AdminsComponent, selectors: [["ngx-admins"]], decls: 5, vars: 2, consts: [[3, "settings", "source", "create", "edit", "delete"]], template: function AdminsComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header");
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵtext"](2, " Admins Table ");
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵelementStart"](3, "nb-card-body")(4, "ng2-smart-table", 0);
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵlistener"]("create", function AdminsComponent_Template_ng2_smart_table_create_4_listener() { return ctx.createNewAdmin(); })("edit", function AdminsComponent_Template_ng2_smart_table_edit_4_listener($event) { return ctx.editAdmin($event); })("delete", function AdminsComponent_Template_ng2_smart_table_delete_4_listener($event) { return ctx.deleteAdmin($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵelementEnd"]()()();
     } if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵadvance"](4);
-        _angular_core__WEBPACK_IMPORTED_MODULE_7__["ɵɵproperty"]("settings", ctx.settings)("source", ctx.source);
-    } }, dependencies: [_nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCardHeaderComponent, ng2_smart_table__WEBPACK_IMPORTED_MODULE_6__.Ng2SmartTableComponent], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhZG1pbnMuY29tcG9uZW50LnNjc3MifQ== */"] });
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵadvance"](4);
+        _angular_core__WEBPACK_IMPORTED_MODULE_8__["ɵɵproperty"]("settings", ctx.settings)("source", ctx.source);
+    } }, dependencies: [_nebular_theme__WEBPACK_IMPORTED_MODULE_9__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_9__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_9__.NbCardHeaderComponent, ng2_smart_table__WEBPACK_IMPORTED_MODULE_7__.Ng2SmartTableComponent], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJhZG1pbnMuY29tcG9uZW50LnNjc3MifQ== */"] });
 
 
 /***/ }),
@@ -261,6 +315,7 @@ AdminsModule.ɵinj = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_6__["�
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbSelectModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbFormFieldModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbButtonModule,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule,
         _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule] });
 (function () { (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵsetNgModuleScope"](AdminsModule, { declarations: [_admins_component__WEBPACK_IMPORTED_MODULE_0__.AdminsComponent,
         _components_admin_detail_renderer_admin_detail_renderer_component__WEBPACK_IMPORTED_MODULE_2__.AdminDetailRendererComponent,
@@ -275,6 +330,7 @@ AdminsModule.ɵinj = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_6__["�
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbSelectModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbFormFieldModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbButtonModule,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule,
         _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule] }); })();
 
 
@@ -320,7 +376,6 @@ function AdminDetailRendererComponent_div_0_Template(rf, ctx) { if (rf & 1) {
 class AdminDetailRendererComponent {
     constructor() { }
     ngOnInit() {
-        console.log(this.rowData);
         this.adminRoles = this.rowData.roles;
     }
 }
@@ -350,12 +405,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "CreateNewAdminModalComponent": () => (/* binding */ CreateNewAdminModalComponent)
 /* harmony export */ });
-/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/forms */ 2508);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ 2560);
-/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @nebular/theme */ 6953);
-/* harmony import */ var _services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../services/data-manipulation.service */ 8510);
-/* harmony import */ var _admin_service_admins_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../admin-service/admins.service */ 9918);
-/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common */ 4666);
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/forms */ 2508);
+/* harmony import */ var _helpers_must_match_validator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../helpers/must-match.validator */ 4184);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ 2560);
+/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @nebular/theme */ 6953);
+/* harmony import */ var _services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../services/data-manipulation.service */ 8510);
+/* harmony import */ var _admin_service_admins_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../admin-service/admins.service */ 9918);
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/common */ 4666);
 
 
 
@@ -363,51 +419,153 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function CreateNewAdminModalComponent_nb_option_31_Template(rf, ctx) { if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-option", 24);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+
+function CreateNewAdminModalComponent_ng_container_15_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "First name required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_15_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewAdminModalComponent_ng_container_15_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
 } if (rf & 2) {
-    const role_r1 = ctx.$implicit;
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("value", role_r1.name);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](role_r1.name);
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r0.newAdminForm.controls["firstName"] == null ? null : ctx_r0.newAdminForm.controls["firstName"].errors == null ? null : ctx_r0.newAdminForm.controls["firstName"].errors["required"]);
+} }
+function CreateNewAdminModalComponent_ng_container_21_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Last name required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_21_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewAdminModalComponent_ng_container_21_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r1.newAdminForm.controls["lastName"] == null ? null : ctx_r1.newAdminForm.controls["lastName"].errors == null ? null : ctx_r1.newAdminForm.controls["lastName"].errors["required"]);
+} }
+function CreateNewAdminModalComponent_ng_container_28_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Email required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_28_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Email invalid!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_28_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewAdminModalComponent_ng_container_28_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewAdminModalComponent_ng_container_28_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r2.newAdminForm.controls["email"] == null ? null : ctx_r2.newAdminForm.controls["email"].errors == null ? null : ctx_r2.newAdminForm.controls["email"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r2.newAdminForm.controls["email"] == null ? null : ctx_r2.newAdminForm.controls["email"].errors == null ? null : ctx_r2.newAdminForm.controls["email"].errors["email"]);
+} }
+function CreateNewAdminModalComponent_nb_checkbox_34_Template(rf, ctx) { if (rf & 1) {
+    const _r13 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-checkbox", 27);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("checkedChange", function CreateNewAdminModalComponent_nb_checkbox_34_Template_nb_checkbox_checkedChange_0_listener($event) { const restoredCtx = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r13); const role_r10 = restoredCtx.$implicit; const ctx_r12 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵresetView"](ctx_r12.setAdminRole($event, role_r10.name)); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} if (rf & 2) {
+    const role_r10 = ctx.$implicit;
+    const first_r11 = ctx.first;
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵstyleMap"](!first_r11 ? "margin-left:10px" : "");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate"](role_r10.name);
+} }
+function CreateNewAdminModalComponent_ng_container_44_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_44_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Minimum 6 characters");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_44_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewAdminModalComponent_ng_container_44_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewAdminModalComponent_ng_container_44_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r4 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r4.newAdminForm.controls["password"] == null ? null : ctx_r4.newAdminForm.controls["password"].errors == null ? null : ctx_r4.newAdminForm.controls["password"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r4.newAdminForm.controls["password"] == null ? null : ctx_r4.newAdminForm.controls["password"].errors == null ? null : ctx_r4.newAdminForm.controls["password"].errors["minlength"]);
+} }
+function CreateNewAdminModalComponent_ng_container_53_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_53_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password mismatched!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewAdminModalComponent_ng_container_53_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewAdminModalComponent_ng_container_53_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewAdminModalComponent_ng_container_53_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newAdminForm.controls["confirmPassword"] == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newAdminForm.controls["confirmPassword"] == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors["mustMatch"]);
 } }
 class CreateNewAdminModalComponent {
-    constructor(ref, data, adminService) {
+    constructor(ref, data, adminService, formBuilder) {
         this.ref = ref;
         this.data = data;
         this.adminService = adminService;
-        this.newAdminForm = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroup({
-            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+        this.formBuilder = formBuilder;
+        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl();
+        this.checkedRoles = [];
+        this.newAdminForm = this.formBuilder.group({
+            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.email
             ]),
-            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', []),
-            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', []),
+            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.minLength(6)
             ]),
-            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-        });
-        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl();
+        }, { validator: (0,_helpers_must_match_validator__WEBPACK_IMPORTED_MODULE_0__.MustMatch)('password', 'confirmPassword') });
     }
     cancel() {
         this.ref.close();
     }
     onSubmit(event) {
         if (this.newAdminForm.valid) {
-            let roleUuid = '';
+            let roleUuids = [];
             this.adminRoles.forEach((el) => {
-                if (el.name === this.selectedRole.value) {
-                    roleUuid = el.uuid;
-                }
+                this.checkedRoles.forEach((role) => {
+                    if (el.name === role) {
+                        roleUuids.push({ uuid: el.uuid });
+                    }
+                });
             });
             const adminValues = {
                 identity: this.newAdminForm.value.email,
@@ -415,12 +573,12 @@ class CreateNewAdminModalComponent {
                 passwordConfirm: this.newAdminForm.value.confirmPassword,
                 firstName: this.newAdminForm.value.firstName,
                 lastName: this.newAdminForm.value.lastName,
-                roles: [{ uuid: roleUuid }]
+                roles: roleUuids
             };
             this.ref.close(adminValues);
         }
         else {
-            this.data.showToast('warning', 'Error', '');
+            this.data.showToast('warning', 'The form is invalid!', '');
         }
     }
     ngOnInit() {
@@ -433,7 +591,6 @@ class CreateNewAdminModalComponent {
         this.adminRolesObservable = this.adminService.getAdminRoles().subscribe((res) => {
             const adminList = res['_embedded'].roles;
             this.adminRoles = adminList;
-            this.selectedRole.setValue(this.adminRoles[0].name);
         });
     }
     getInputType() {
@@ -445,79 +602,114 @@ class CreateNewAdminModalComponent {
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
     }
+    setAdminRole(event, roleName) {
+        if (event) {
+            this.checkedRoles.push(roleName);
+        }
+        else {
+            if (this.checkedRoles.length) {
+                this.checkedRoles.forEach((el, index) => {
+                    if (el === roleName) {
+                        this.checkedRoles.splice(index, 1);
+                    }
+                });
+            }
+        }
+    }
 }
-CreateNewAdminModalComponent.ɵfac = function CreateNewAdminModalComponent_Factory(t) { return new (t || CreateNewAdminModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_1__.AdminsService)); };
-CreateNewAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: CreateNewAdminModalComponent, selectors: [["ngx-create-new-admin-modal"]], decls: 51, vars: 11, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [3, "selected", "formControl"], [3, "value", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type"], ["nbButton", "", 3, "disabled", "click"], [3, "value"]], template: function CreateNewAdminModalComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "Create new admin");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](5, "button", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_5_listener() { return ctx.cancel(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](6, "nb-icon", 2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](13, "First Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](14, "input", 8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](15, "div", 5)(16, "div", 6)(17, "label", 9);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](18, "Last Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](19, "input", 10);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](20, "div", 4)(21, "div", 5)(22, "div", 6)(23, "label", 11);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](24, "Email");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](25, "input", 12);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](29, "Role");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "nb-select", 15);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, CreateNewAdminModalComponent_nb_option_31_Template, 2, 2, "nb-option", 16);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "div", 4)(33, "div", 5)(34, "div", 6)(35, "label", 17);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](36, "Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](37, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](38, "input", 18);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](39, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_39_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](40, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](41, "div", 5)(42, "div", 6)(43, "label", 21);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](44, "Confirm Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](45, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](46, "input", 22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](47, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_47_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](48, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](49, "button", 23);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_49_listener($event) { return ctx.onSubmit($event); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](50, "Submit");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
+CreateNewAdminModalComponent.ɵfac = function CreateNewAdminModalComponent_Factory(t) { return new (t || CreateNewAdminModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_2__.AdminsService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder)); };
+CreateNewAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineComponent"]({ type: CreateNewAdminModalComponent, selectors: [["ngx-create-new-admin-modal"]], decls: 56, vars: 19, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", 3, "status"], [4, "ngIf"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", 3, "status"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation", 3, "status"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checkedChange", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type", "status"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type", "status"], ["nbButton", "", 3, "disabled", "click"], ["class", "caption status-danger mb-0", 4, "ngIf"], [1, "caption", "status-danger", "mb-0"], [3, "checkedChange"]], template: function CreateNewAdminModalComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "Create new admin");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](5, "button", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_5_listener() { return ctx.cancel(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](6, "nb-icon", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](13, "First Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](14, "input", 8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](15, CreateNewAdminModalComponent_ng_container_15_Template, 2, 1, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](16, "div", 5)(17, "div", 6)(18, "label", 10);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](19, "Last Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](20, "input", 11);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](21, CreateNewAdminModalComponent_ng_container_21_Template, 2, 1, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](22, "div", 4)(23, "div", 5)(24, "div", 6)(25, "label", 12);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](26, "Email");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](27, "input", 13);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](28, CreateNewAdminModalComponent_ng_container_28_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](29, "div", 5)(30, "div", 14)(31, "label", 15);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](32, "Role");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](33, "div", 16);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](34, CreateNewAdminModalComponent_nb_checkbox_34_Template, 2, 3, "nb-checkbox", 17);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](35, "div", 4)(36, "div", 5)(37, "div", 6)(38, "label", 18);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](39, "Password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](40, "nb-form-field");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](41, "input", 19);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](42, "button", 20);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_42_listener() { return ctx.toggleShowPassword(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](43, "nb-icon", 21);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](44, CreateNewAdminModalComponent_ng_container_44_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](45, "div", 5)(46, "div", 6)(47, "label", 22);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](48, "Confirm Password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](49, "nb-form-field");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](50, "input", 23);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](51, "button", 20);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_51_listener() { return ctx.toggleShowPassword(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](52, "nb-icon", 21);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](53, CreateNewAdminModalComponent_ng_container_53_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](54, "button", 24);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewAdminModalComponent_Template_button_click_54_listener($event) { return ctx.onSubmit($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](55, "Submit");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()()();
     } if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("formGroup", ctx.newAdminForm);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("selected", "admin")("formControl", ctx.selectedRole);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngForOf", ctx.adminRoles);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵpropertyInterpolate"]("disabled", ctx.newAdminForm.invalid);
-    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSelectComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbOptionComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJjcmVhdGUtbmV3LWFkbWluLW1vZGFsLmNvbXBvbmVudC5zY3NzIn0= */"] });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("formGroup", ctx.newAdminForm);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newAdminForm.controls["firstName"].invalid && (ctx.newAdminForm.controls["firstName"].dirty || ctx.newAdminForm.controls["firstName"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newAdminForm.controls["firstName"].invalid && (ctx.newAdminForm.controls["firstName"].dirty || ctx.newAdminForm.controls["firstName"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newAdminForm.controls["lastName"].invalid && (ctx.newAdminForm.controls["lastName"].dirty || ctx.newAdminForm.controls["lastName"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newAdminForm.controls["lastName"].invalid && (ctx.newAdminForm.controls["lastName"].dirty || ctx.newAdminForm.controls["lastName"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newAdminForm.controls["email"].invalid && (ctx.newAdminForm.controls["email"].dirty || ctx.newAdminForm.controls["email"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newAdminForm.controls["email"].invalid && (ctx.newAdminForm.controls["email"].dirty || ctx.newAdminForm.controls["email"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngForOf", ctx.adminRoles);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("type", ctx.getInputType())("status", ctx.newAdminForm.controls["password"].invalid && (ctx.newAdminForm.controls["password"].dirty || ctx.newAdminForm.controls["password"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newAdminForm.controls["password"].invalid && (ctx.newAdminForm.controls["password"].dirty || ctx.newAdminForm.controls["password"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("type", ctx.getInputType())("status", ctx.newAdminForm.controls["confirmPassword"].invalid && (ctx.newAdminForm.controls["confirmPassword"].dirty || ctx.newAdminForm.controls["confirmPassword"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newAdminForm.controls["confirmPassword"].invalid && (ctx.newAdminForm.controls["confirmPassword"].dirty || ctx.newAdminForm.controls["confirmPassword"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵpropertyInterpolate"]("disabled", ctx.newAdminForm.invalid);
+    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_6__.NgForOf, _angular_common__WEBPACK_IMPORTED_MODULE_6__.NgIf, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCheckboxComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_4__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_4__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJjcmVhdGUtbmV3LWFkbWluLW1vZGFsLmNvbXBvbmVudC5zY3NzIn0= */"] });
 
 
 /***/ }),
@@ -603,13 +795,19 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function UpdateAdminModalComponent_nb_option_31_Template(rf, ctx) { if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-option", 24);
+function UpdateAdminModalComponent_nb_checkbox_31_Template(rf, ctx) { if (rf & 1) {
+    const _r5 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-checkbox", 18);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("checkedChange", function UpdateAdminModalComponent_nb_checkbox_31_Template_nb_checkbox_checkedChange_0_listener($event) { const restoredCtx = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r5); const role_r1 = restoredCtx.$implicit; const ctx_r4 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r4.setAdminRole($event, role_r1.name)); });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
     const role_r1 = ctx.$implicit;
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("value", role_r1.name);
+    const i_r2 = ctx.index;
+    const first_r3 = ctx.first;
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵstyleMap"](!first_r3 ? "margin-left:10px" : "");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("checked", ctx_r0.isRoleChecked[i_r2].show);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](role_r1.name);
 } }
@@ -629,32 +827,27 @@ class UpdateAdminModalComponent {
                 _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
             ]),
             role: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', []),
-            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
-            ]),
-            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
-            ]),
         });
-        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl();
+        this.checkedRoles = [];
+        this.isRoleChecked = [{ name: 'admin', show: false }, { name: 'superuser', show: false }];
     }
     cancel() {
         this.ref.close();
     }
     onSubmit(event) {
         if (this.newAdminForm.valid) {
-            let roleUuid = '';
+            let roleUuids = [];
             this.adminRoles.forEach((el) => {
-                if (el.name === this.selectedRole.value) {
-                    roleUuid = el.uuid;
-                }
+                this.checkedRoles.forEach((role) => {
+                    if (el.name === role) {
+                        roleUuids.push({ uuid: el.uuid });
+                    }
+                });
             });
             const adminValues = {
-                password: this.newAdminForm.value.password,
-                passwordConfirm: this.newAdminForm.value.confirmPassword,
                 firstName: this.newAdminForm.value.firstName,
                 lastName: this.newAdminForm.value.lastName,
-                roles: [{ uuid: roleUuid }],
+                roles: roleUuids,
             };
             this.ref.close(adminValues);
         }
@@ -673,26 +866,48 @@ class UpdateAdminModalComponent {
         this.newAdminForm.controls['firstName'].setValue(adminData.firstName);
         this.newAdminForm.controls['lastName'].setValue(adminData.lastName);
         this.newAdminForm.controls['email'].setValue(adminData.identity);
-        this.selectedRole.setValue(adminData.roles[0].name);
     }
     getAdminRoles() {
         this.adminRolesObservable = this.adminService.getAdminRoles().subscribe((res) => {
-            const adminList = res['_embedded'].roles;
-            this.adminRoles = adminList;
+            this.adminRoles = res['_embedded'].roles;
+            this.adminData.roles.forEach((el) => {
+                if (el.name === 'admin') {
+                    this.isRoleChecked[0].show = true;
+                }
+                else {
+                    this.isRoleChecked[1].show = true;
+                }
+                this.checkedRoles.push(el.name);
+            });
         });
     }
-    getInputType() {
-        if (this.showPassword) {
-            return 'text';
+    setAdminRole(event, roleName) {
+        if (event) {
+            if (this.checkedRoles.length != 0) {
+                this.checkedRoles.forEach((el) => {
+                    if (el === roleName) {
+                        return;
+                    }
+                    else {
+                        this.checkedRoles.push(roleName);
+                    }
+                });
+            }
+            else {
+                this.checkedRoles.push(roleName);
+            }
         }
-        return 'password';
-    }
-    toggleShowPassword() {
-        this.showPassword = !this.showPassword;
+        else if (this.checkedRoles.length) {
+            this.checkedRoles.forEach((el, index) => {
+                if (el === roleName) {
+                    this.checkedRoles.splice(index, 1);
+                }
+            });
+        }
     }
 }
 UpdateAdminModalComponent.ɵfac = function UpdateAdminModalComponent_Factory(t) { return new (t || UpdateAdminModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_1__.AdminsService)); };
-UpdateAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: UpdateAdminModalComponent, selectors: [["ngx-update-admin-modal"]], inputs: { adminData: "adminData" }, decls: 51, vars: 11, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], [3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [3, "selected", "formControl"], [3, "value", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", 3, "type"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", 3, "type"], ["nbButton", "", 3, "disabled", "click"], [3, "value"]], template: function UpdateAdminModalComponent_Template(rf, ctx) { if (rf & 1) {
+UpdateAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: UpdateAdminModalComponent, selectors: [["ngx-update-admin-modal"]], inputs: { adminData: "adminData" }, decls: 34, vars: 3, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], [3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checked", "checkedChange", 4, "ngFor", "ngForOf"], ["nbButton", "", 3, "disabled", "click"], [3, "checked", "checkedChange"]], template: function UpdateAdminModalComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "Update admin");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
@@ -718,51 +933,21 @@ UpdateAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](29, "Role");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "nb-select", 15);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, UpdateAdminModalComponent_nb_option_31_Template, 2, 2, "nb-option", 16);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "div", 15);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, UpdateAdminModalComponent_nb_checkbox_31_Template, 2, 4, "nb-checkbox", 16);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "div", 4)(33, "div", 5)(34, "div", 6)(35, "label", 17);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](36, "Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](37, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](38, "input", 18);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](39, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateAdminModalComponent_Template_button_click_39_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](40, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](41, "div", 5)(42, "div", 6)(43, "label", 21);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](44, "Confirm Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](45, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](46, "input", 22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](47, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateAdminModalComponent_Template_button_click_47_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](48, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](49, "button", 23);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateAdminModalComponent_Template_button_click_49_listener($event) { return ctx.onSubmit($event); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](50, "Submit");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "button", 17);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateAdminModalComponent_Template_button_click_32_listener($event) { return ctx.onSubmit($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](33, "Submit");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("formGroup", ctx.newAdminForm);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("selected", ctx.selectedRole)("formControl", ctx.selectedRole);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](23);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngForOf", ctx.adminRoles);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵpropertyInterpolate"]("disabled", ctx.newAdminForm.invalid);
-    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSelectComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbOptionComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ1cGRhdGUtYWRtaW4tbW9kYWwuY29tcG9uZW50LnNjc3MifQ== */"] });
+    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCheckboxComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ1cGRhdGUtYWRtaW4tbW9kYWwuY29tcG9uZW50LnNjc3MifQ== */"] });
 
 
 /***/ }),
@@ -953,12 +1138,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "CreateNewUserModalComponent": () => (/* binding */ CreateNewUserModalComponent)
 /* harmony export */ });
-/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/forms */ 2508);
-/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/core */ 2560);
-/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @nebular/theme */ 6953);
-/* harmony import */ var _services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../services/data-manipulation.service */ 8510);
-/* harmony import */ var _user_service_user_service_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../user-service/user-service.service */ 8026);
-/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/common */ 4666);
+/* harmony import */ var _angular_forms__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @angular/forms */ 2508);
+/* harmony import */ var _helpers_must_match_validator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../helpers/must-match.validator */ 4184);
+/* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/core */ 2560);
+/* harmony import */ var _nebular_theme__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @nebular/theme */ 6953);
+/* harmony import */ var _services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../services/data-manipulation.service */ 8510);
+/* harmony import */ var _user_service_user_service_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../user-service/user-service.service */ 8026);
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @angular/common */ 4666);
 
 
 
@@ -966,51 +1152,153 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function CreateNewUserModalComponent_nb_option_31_Template(rf, ctx) { if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-option", 24);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
+
+function CreateNewUserModalComponent_ng_container_15_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "First name required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_15_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewUserModalComponent_ng_container_15_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
 } if (rf & 2) {
-    const role_r1 = ctx.$implicit;
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("value", role_r1.name);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](role_r1.name);
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r0.newUserForm.controls["firstName"] == null ? null : ctx_r0.newUserForm.controls["firstName"].errors == null ? null : ctx_r0.newUserForm.controls["firstName"].errors["required"]);
+} }
+function CreateNewUserModalComponent_ng_container_21_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Last name required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_21_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewUserModalComponent_ng_container_21_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r1 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r1.newUserForm.controls["lastName"] == null ? null : ctx_r1.newUserForm.controls["lastName"].errors == null ? null : ctx_r1.newUserForm.controls["lastName"].errors["required"]);
+} }
+function CreateNewUserModalComponent_ng_container_28_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Email required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_28_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Email invalid!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_28_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewUserModalComponent_ng_container_28_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewUserModalComponent_ng_container_28_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r2 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r2.newUserForm.controls["email"] == null ? null : ctx_r2.newUserForm.controls["email"].errors == null ? null : ctx_r2.newUserForm.controls["email"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r2.newUserForm.controls["email"] == null ? null : ctx_r2.newUserForm.controls["email"].errors == null ? null : ctx_r2.newUserForm.controls["email"].errors["email"]);
+} }
+function CreateNewUserModalComponent_nb_checkbox_34_Template(rf, ctx) { if (rf & 1) {
+    const _r13 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-checkbox", 27);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("checkedChange", function CreateNewUserModalComponent_nb_checkbox_34_Template_nb_checkbox_checkedChange_0_listener($event) { const restoredCtx = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵrestoreView"](_r13); const role_r10 = restoredCtx.$implicit; const ctx_r12 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"](); return _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵresetView"](ctx_r12.setUserRole($event, role_r10.name)); });
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} if (rf & 2) {
+    const role_r10 = ctx.$implicit;
+    const first_r11 = ctx.first;
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵstyleMap"](!first_r11 ? "margin-left:10px" : "");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtextInterpolate"](role_r10.name);
+} }
+function CreateNewUserModalComponent_ng_container_44_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_44_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Minimum 6 characters");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_44_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewUserModalComponent_ng_container_44_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewUserModalComponent_ng_container_44_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r4 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r4.newUserForm.controls["password"] == null ? null : ctx_r4.newUserForm.controls["password"].errors == null ? null : ctx_r4.newUserForm.controls["password"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r4.newUserForm.controls["password"] == null ? null : ctx_r4.newUserForm.controls["password"].errors == null ? null : ctx_r4.newUserForm.controls["password"].errors["minlength"]);
+} }
+function CreateNewUserModalComponent_ng_container_53_p_1_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password required!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_53_p_2_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "p", 26);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](1, "Password mismatched!");
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+} }
+function CreateNewUserModalComponent_ng_container_53_Template(rf, ctx) { if (rf & 1) {
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerStart"](0);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](1, CreateNewUserModalComponent_ng_container_53_p_1_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](2, CreateNewUserModalComponent_ng_container_53_p_2_Template, 2, 0, "p", 25);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementContainerEnd"]();
+} if (rf & 2) {
+    const ctx_r5 = _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newUserForm.controls["confirmPassword"] == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors["required"]);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+    _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newUserForm.controls["confirmPassword"] == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors["mustMatch"]);
 } }
 class CreateNewUserModalComponent {
-    constructor(ref, data, userService) {
+    constructor(ref, data, userService, formBuilder) {
         this.ref = ref;
         this.data = data;
         this.userService = userService;
-        this.newUserForm = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroup({
-            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+        this.formBuilder = formBuilder;
+        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl();
+        this.checkedRoles = [];
+        this.newUserForm = this.formBuilder.group({
+            firstName: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            lastName: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            email: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.email
             ]),
-            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', []),
-            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            role: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', []),
+            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.minLength(6)
             ]),
-            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
+            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl('', [
+                _angular_forms__WEBPACK_IMPORTED_MODULE_4__.Validators.required
             ]),
-        });
-        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl();
+        }, { validator: (0,_helpers_must_match_validator__WEBPACK_IMPORTED_MODULE_0__.MustMatch)('password', 'confirmPassword') });
     }
     cancel() {
         this.ref.close();
     }
     onSubmit(event) {
         if (this.newUserForm.valid) {
-            let roleUuid = '';
+            let roleUuids = [];
             this.userRoles.forEach((el) => {
-                if (el.name === this.selectedRole.value) {
-                    roleUuid = el.uuid;
-                }
+                this.checkedRoles.forEach((role) => {
+                    if (el.name === role) {
+                        roleUuids.push({ uuid: el.uuid });
+                    }
+                });
             });
             const userValues = {
                 identity: this.newUserForm.value.email,
@@ -1022,12 +1310,12 @@ class CreateNewUserModalComponent {
                     lastName: this.newUserForm.value.lastName,
                     email: this.newUserForm.value.email
                 },
-                roles: [{ uuid: roleUuid }]
+                roles: roleUuids
             };
             this.ref.close(userValues);
         }
         else {
-            this.data.showToast('warning', 'Error', '');
+            this.data.showToast('warning', 'The form is invalid!', '');
         }
     }
     ngOnInit() {
@@ -1040,7 +1328,6 @@ class CreateNewUserModalComponent {
         this.adminRolesObservable = this.userService.getUsersRoles().subscribe((res) => {
             const userList = res['_embedded'].roles;
             this.userRoles = userList;
-            this.selectedRole.setValue(this.userRoles[0].name);
         });
     }
     getInputType() {
@@ -1052,79 +1339,114 @@ class CreateNewUserModalComponent {
     toggleShowPassword() {
         this.showPassword = !this.showPassword;
     }
+    setUserRole(event, roleName) {
+        if (event) {
+            this.checkedRoles.push(roleName);
+        }
+        else {
+            if (this.checkedRoles.length) {
+                this.checkedRoles.forEach((el, index) => {
+                    if (el === roleName) {
+                        this.checkedRoles.splice(index, 1);
+                    }
+                });
+            }
+        }
+    }
 }
-CreateNewUserModalComponent.ɵfac = function CreateNewUserModalComponent_Factory(t) { return new (t || CreateNewUserModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_1__.UserServiceService)); };
-CreateNewUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: CreateNewUserModalComponent, selectors: [["ngx-create-new-user-modal"]], decls: 51, vars: 11, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [3, "selected", "formControl"], [3, "value", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type"], ["nbButton", "", 3, "disabled", "click"], [3, "value"]], template: function CreateNewUserModalComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "Create new user");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](5, "button", 1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_5_listener() { return ctx.cancel(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](6, "nb-icon", 2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](13, "First Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](14, "input", 8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](15, "div", 5)(16, "div", 6)(17, "label", 9);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](18, "Last Name");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](19, "input", 10);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](20, "div", 4)(21, "div", 5)(22, "div", 6)(23, "label", 11);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](24, "Email");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](25, "input", 12);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](29, "Role");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "nb-select", 15);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, CreateNewUserModalComponent_nb_option_31_Template, 2, 2, "nb-option", 16);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "div", 4)(33, "div", 5)(34, "div", 6)(35, "label", 17);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](36, "Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](37, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](38, "input", 18);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](39, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_39_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](40, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](41, "div", 5)(42, "div", 6)(43, "label", 21);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](44, "Confirm Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](45, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](46, "input", 22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](47, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_47_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](48, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](49, "button", 23);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_49_listener($event) { return ctx.onSubmit($event); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](50, "Submit");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
+CreateNewUserModalComponent.ɵfac = function CreateNewUserModalComponent_Factory(t) { return new (t || CreateNewUserModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_2__.UserServiceService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder)); };
+CreateNewUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineComponent"]({ type: CreateNewUserModalComponent, selectors: [["ngx-create-new-user-modal"]], decls: 56, vars: 19, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", 3, "status"], [4, "ngIf"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", 3, "status"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation", 3, "status"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checkedChange", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type", "status"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type", "status"], ["nbButton", "", 3, "disabled", "click"], ["class", "caption status-danger mb-0", 4, "ngIf"], [1, "caption", "status-danger", "mb-0"], [3, "checkedChange"]], template: function CreateNewUserModalComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "Create new user");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](5, "button", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_5_listener() { return ctx.cancel(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](6, "nb-icon", 2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](7, "nb-card-body")(8, "form", 3)(9, "div", 4)(10, "div", 5)(11, "div", 6)(12, "label", 7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](13, "First Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](14, "input", 8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](15, CreateNewUserModalComponent_ng_container_15_Template, 2, 1, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](16, "div", 5)(17, "div", 6)(18, "label", 10);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](19, "Last Name");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](20, "input", 11);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](21, CreateNewUserModalComponent_ng_container_21_Template, 2, 1, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](22, "div", 4)(23, "div", 5)(24, "div", 6)(25, "label", 12);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](26, "Email");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](27, "input", 13);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](28, CreateNewUserModalComponent_ng_container_28_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](29, "div", 5)(30, "div", 14)(31, "label", 15);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](32, "Role");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](33, "div", 16);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](34, CreateNewUserModalComponent_nb_checkbox_34_Template, 2, 3, "nb-checkbox", 17);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](35, "div", 4)(36, "div", 5)(37, "div", 6)(38, "label", 18);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](39, "Password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](40, "nb-form-field");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](41, "input", 19);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](42, "button", 20);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_42_listener() { return ctx.toggleShowPassword(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](43, "nb-icon", 21);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](44, CreateNewUserModalComponent_ng_container_44_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](45, "div", 5)(46, "div", 6)(47, "label", 22);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](48, "Confirm Password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](49, "nb-form-field");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](50, "input", 23);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](51, "button", 20);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_51_listener() { return ctx.toggleShowPassword(); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelement"](52, "nb-icon", 21);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtemplate"](53, CreateNewUserModalComponent_ng_container_53_Template, 3, 2, "ng-container", 9);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()();
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](54, "button", 24);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵlistener"]("click", function CreateNewUserModalComponent_Template_button_click_54_listener($event) { return ctx.onSubmit($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](55, "Submit");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementEnd"]()()()();
     } if (rf & 2) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("formGroup", ctx.newUserForm);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("selected", "admin")("formControl", ctx.selectedRole);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngForOf", ctx.userRoles);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵpropertyInterpolate"]("disabled", ctx.newUserForm.invalid);
-    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSelectComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbOptionComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJjcmVhdGUtbmV3LXVzZXItbW9kYWwuY29tcG9uZW50LnNjc3MifQ== */"] });
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](8);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("formGroup", ctx.newUserForm);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newUserForm.controls["firstName"].invalid && (ctx.newUserForm.controls["firstName"].dirty || ctx.newUserForm.controls["firstName"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newUserForm.controls["firstName"].invalid && (ctx.newUserForm.controls["firstName"].dirty || ctx.newUserForm.controls["firstName"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](5);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newUserForm.controls["lastName"].invalid && (ctx.newUserForm.controls["lastName"].dirty || ctx.newUserForm.controls["lastName"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newUserForm.controls["lastName"].invalid && (ctx.newUserForm.controls["lastName"].dirty || ctx.newUserForm.controls["lastName"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("status", ctx.newUserForm.controls["email"].invalid && (ctx.newUserForm.controls["email"].dirty || ctx.newUserForm.controls["email"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newUserForm.controls["email"].invalid && (ctx.newUserForm.controls["email"].dirty || ctx.newUserForm.controls["email"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngForOf", ctx.userRoles);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](7);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("type", ctx.getInputType())("status", ctx.newUserForm.controls["password"].invalid && (ctx.newUserForm.controls["password"].dirty || ctx.newUserForm.controls["password"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newUserForm.controls["password"].invalid && (ctx.newUserForm.controls["password"].dirty || ctx.newUserForm.controls["password"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](6);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("type", ctx.getInputType())("status", ctx.newUserForm.controls["confirmPassword"].invalid && (ctx.newUserForm.controls["confirmPassword"].dirty || ctx.newUserForm.controls["confirmPassword"].touched) ? "danger" : "basic");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](2);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx.newUserForm.controls["confirmPassword"].invalid && (ctx.newUserForm.controls["confirmPassword"].dirty || ctx.newUserForm.controls["confirmPassword"].touched));
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵpropertyInterpolate"]("disabled", ctx.newUserForm.invalid);
+    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_6__.NgForOf, _angular_common__WEBPACK_IMPORTED_MODULE_6__.NgIf, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbCheckboxComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_4__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_4__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJjcmVhdGUtbmV3LXVzZXItbW9kYWwuY29tcG9uZW50LnNjc3MifQ== */"] });
 
 
 /***/ }),
@@ -1210,13 +1532,19 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-function UpdateUserModalComponent_nb_option_31_Template(rf, ctx) { if (rf & 1) {
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-option", 24);
+function UpdateUserModalComponent_nb_checkbox_31_Template(rf, ctx) { if (rf & 1) {
+    const _r5 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵgetCurrentView"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-checkbox", 18);
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("checkedChange", function UpdateUserModalComponent_nb_checkbox_31_Template_nb_checkbox_checkedChange_0_listener($event) { const restoredCtx = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵrestoreView"](_r5); const role_r1 = restoredCtx.$implicit; const ctx_r4 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"](); return _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵresetView"](ctx_r4.setUserRole($event, role_r1.name)); });
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
 } if (rf & 2) {
     const role_r1 = ctx.$implicit;
-    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("value", role_r1.name);
+    const i_r2 = ctx.index;
+    const first_r3 = ctx.first;
+    const ctx_r0 = _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵnextContext"]();
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵstyleMap"](!first_r3 ? "margin-left:10px" : "");
+    _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("checked", ctx_r0.isRoleChecked[i_r2].show);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
     _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtextInterpolate"](role_r1.name);
 } }
@@ -1236,36 +1564,31 @@ class UpdateUserModalComponent {
                 _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
             ]),
             role: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', []),
-            password: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
-            ]),
-            confirmPassword: new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl('', [
-                _angular_forms__WEBPACK_IMPORTED_MODULE_3__.Validators.required
-            ]),
         });
-        this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControl();
+        this.checkedRoles = [];
+        this.isRoleChecked = [{ name: 'guest', show: false }, { name: 'user', show: false }];
     }
     cancel() {
         this.ref.close();
     }
     onSubmit(event) {
         if (this.newUserForm.valid) {
-            let roleUuid = '';
+            let roleUuids = [];
             this.userRoles.forEach((el) => {
-                if (el.name === this.selectedRole.value) {
-                    roleUuid = el.uuid;
-                }
+                this.checkedRoles.forEach((role) => {
+                    if (el.name === role) {
+                        roleUuids.push({ uuid: el.uuid });
+                    }
+                });
             });
             const userValues = {
-                password: this.newUserForm.value.password,
-                passwordConfirm: this.newUserForm.value.confirmPassword,
                 status: 'active',
                 detail: {
                     firstName: this.newUserForm.value.firstName,
                     lastName: this.newUserForm.value.lastName,
                     email: this.newUserForm.value.email
                 },
-                roles: [{ uuid: roleUuid }]
+                roles: roleUuids
             };
             this.ref.close(userValues);
         }
@@ -1282,29 +1605,50 @@ class UpdateUserModalComponent {
     }
     getUsersRoles() {
         this.userRolesObservable = this.userService.getUsersRoles().subscribe((res) => {
-            const userList = res['_embedded'].roles;
-            this.userRoles = userList;
-            this.selectedRole.setValue(this.userRoles[0].name);
+            this.userRoles = res['_embedded'].roles;
+            this.userData.roles.forEach((el) => {
+                if (el.name === 'user') {
+                    this.isRoleChecked[1].show = true;
+                }
+                else {
+                    this.isRoleChecked[0].show = true;
+                }
+                this.checkedRoles.push(el.name);
+            });
         });
     }
     setFormValues(userData) {
         this.newUserForm.controls['firstName'].setValue(userData.detail.firstName);
         this.newUserForm.controls['lastName'].setValue(userData.detail.lastName);
         this.newUserForm.controls['email'].setValue(userData.identity);
-        this.selectedRole.setValue(userData.roles[0].name);
     }
-    getInputType() {
-        if (this.showPassword) {
-            return 'text';
+    setUserRole(event, roleName) {
+        if (event) {
+            if (this.checkedRoles.length != 0) {
+                this.checkedRoles.forEach((el) => {
+                    if (el === roleName) {
+                        return;
+                    }
+                    else {
+                        this.checkedRoles.push(roleName);
+                    }
+                });
+            }
+            else {
+                this.checkedRoles.push(roleName);
+            }
         }
-        return 'password';
-    }
-    toggleShowPassword() {
-        this.showPassword = !this.showPassword;
+        else if (this.checkedRoles.length) {
+            this.checkedRoles.forEach((el, index) => {
+                if (el === roleName) {
+                    this.checkedRoles.splice(index, 1);
+                }
+            });
+        }
     }
 }
 UpdateUserModalComponent.ɵfac = function UpdateUserModalComponent_Factory(t) { return new (t || UpdateUserModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_0__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_1__.UserServiceService)); };
-UpdateUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: UpdateUserModalComponent, selectors: [["ngx-update-user-modal"]], inputs: { userData: "userData" }, decls: 51, vars: 11, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [3, "selected", "formControl"], [3, "value", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type"], ["nbButton", "", 3, "disabled", "click"], [3, "value"]], template: function UpdateUserModalComponent_Template(rf, ctx) { if (rf & 1) {
+UpdateUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵdefineComponent"]({ type: UpdateUserModalComponent, selectors: [["ngx-update-user-modal"]], inputs: { userData: "userData" }, decls: 34, vars: 3, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checked", "checkedChange", 4, "ngFor", "ngForOf"], ["nbButton", "", 3, "disabled", "click"], [3, "checked", "checkedChange"]], template: function UpdateUserModalComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](4, "Update user");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
@@ -1330,51 +1674,21 @@ UpdateUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_M
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](26, "div", 5)(27, "div", 13)(28, "label", 14);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](29, "Role");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "nb-select", 15);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, UpdateUserModalComponent_nb_option_31_Template, 2, 2, "nb-option", 16);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](30, "div", 15);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtemplate"](31, UpdateUserModalComponent_nb_checkbox_31_Template, 2, 4, "nb-checkbox", 16);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "div", 4)(33, "div", 5)(34, "div", 6)(35, "label", 17);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](36, "Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](37, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](38, "input", 18);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](39, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateUserModalComponent_Template_button_click_39_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](40, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](41, "div", 5)(42, "div", 6)(43, "label", 21);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](44, "Confirm Password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](45, "nb-form-field");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](46, "input", 22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](47, "button", 19);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateUserModalComponent_Template_button_click_47_listener() { return ctx.toggleShowPassword(); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelement"](48, "nb-icon", 20);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()()();
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](49, "button", 23);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateUserModalComponent_Template_button_click_49_listener($event) { return ctx.onSubmit($event); });
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](50, "Submit");
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementStart"](32, "button", 17);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵlistener"]("click", function UpdateUserModalComponent_Template_button_click_32_listener($event) { return ctx.onSubmit($event); });
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵtext"](33, "Submit");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵelementEnd"]()()()();
     } if (rf & 2) {
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](8);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("formGroup", ctx.newUserForm);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](22);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("selected", "admin")("formControl", ctx.selectedRole);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](23);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("ngForOf", ctx.userRoles);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](7);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](6);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("type", ctx.getInputType());
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](2);
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵproperty"]("icon", ctx.showPassword ? "eye-outline" : "eye-off-2-outline");
-        _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵattribute"]("aria-label", ctx.showPassword ? "hide password" : "show password");
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵadvance"](1);
         _angular_core__WEBPACK_IMPORTED_MODULE_2__["ɵɵpropertyInterpolate"]("disabled", ctx.newUserForm.invalid);
-    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSelectComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbOptionComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbFormFieldComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbSuffixDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ1cGRhdGUtdXNlci1tb2RhbC5jb21wb25lbnQuc2NzcyJ9 */"] });
+    } }, dependencies: [_angular_common__WEBPACK_IMPORTED_MODULE_5__.NgForOf, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardBodyComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCardHeaderComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbIconComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbInputDirective, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbButtonComponent, _nebular_theme__WEBPACK_IMPORTED_MODULE_4__.NbCheckboxComponent, _angular_forms__WEBPACK_IMPORTED_MODULE_3__["ɵNgNoValidate"], _angular_forms__WEBPACK_IMPORTED_MODULE_3__.DefaultValueAccessor, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatus, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.NgControlStatusGroup, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormGroupDirective, _angular_forms__WEBPACK_IMPORTED_MODULE_3__.FormControlName], styles: ["\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ1cGRhdGUtdXNlci1tb2RhbC5jb21wb25lbnQuc2NzcyJ9 */"] });
 
 
 /***/ }),
@@ -1607,14 +1921,23 @@ class UsersComponent {
         });
     }
     createNewUser() {
-        this.dialogService.open(_components_create_new_user_modal_create_new_user_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateNewUserModalComponent).onClose.subscribe((res) => {
+        this.dialogService.open(_components_create_new_user_modal_create_new_user_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateNewUserModalComponent, { closeOnBackdropClick: false, autoFocus: false }).onClose.subscribe((res) => {
             if (res) {
                 console.log(res);
                 this.newUserObservable = this.userDataService.createNewUser(res).subscribe((res) => {
-                    this.data.showToast('success', 'User added.', '');
+                    this.data.showToast('success', 'Success!', 'User has been added.');
                     this.getUserList();
                 }, (err) => {
-                    this.data.showToast('warning', 'Somthing went wrong', '');
+                    console.log(err);
+                    if (err.detail.email.isEmpty != '') {
+                        this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
+                    }
+                    if (err.password.stringLengthTooShort != '') {
+                        this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+                    }
+                    if (err.passwordConfirm.isEmpty != '') {
+                        this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+                    }
                 });
             }
         });
@@ -1624,7 +1947,7 @@ class UsersComponent {
         this.dialogService.open(_components_update_user_modal_update_user_modal_component__WEBPACK_IMPORTED_MODULE_2__.UpdateUserModalComponent, { closeOnBackdropClick: false, autoFocus: false, context: { userData: userData } }).onClose.subscribe((res) => {
             if (res) {
                 this.updateUserObservable = this.userDataService.updateUser(res, userData.uuid).subscribe((res) => {
-                    this.data.showToast('success', 'User updated.', '');
+                    this.data.showToast('success', 'Success!', 'User has been updated.');
                     this.getUserList();
                 }, (err) => {
                     this.data.showToast('warning', 'Somthing went wrong', '');
@@ -1634,7 +1957,6 @@ class UsersComponent {
     }
     deleteUser(event) {
         const userData = event.data;
-        console.log(userData);
         this.dialogService.open(_components_delete_user_modal_delete_user_modal_component__WEBPACK_IMPORTED_MODULE_1__.DeleteUserModalComponent, { closeOnBackdropClick: false, autoFocus: false, context: { userData: userData } }).onClose.subscribe((res) => {
             if (res) {
                 this.deleteUserObservable = this.userDataService.deleteUser(userData.uuid).subscribe((res) => {
@@ -1709,6 +2031,7 @@ UsersModule.ɵinj = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵ
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbSelectModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbFormFieldModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbButtonModule,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule,
         _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule] });
 (function () { (typeof ngJitMode === "undefined" || ngJitMode) && _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵɵsetNgModuleScope"](UsersModule, { declarations: [_users_component__WEBPACK_IMPORTED_MODULE_0__.UsersComponent,
         _components_user_detail_renderer_user_detail_renderer_component__WEBPACK_IMPORTED_MODULE_2__.UserDetailRendererComponent,
@@ -1723,6 +2046,7 @@ UsersModule.ɵinj = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_6__["ɵ
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbSelectModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbFormFieldModule,
         _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbButtonModule,
+        _nebular_theme__WEBPACK_IMPORTED_MODULE_8__.NbCheckboxModule,
         _angular_forms__WEBPACK_IMPORTED_MODULE_10__.ReactiveFormsModule] }); })();
 
 

@@ -163,7 +163,7 @@ class DataManipulationService {
     constructor(toastrService) {
         this.toastrService = toastrService;
         this.destroyByClick = true;
-        this.duration = 2000;
+        this.duration = 3000;
         this.hasIcon = true;
         this.preventDuplicates = false;
         this.position = _nebular_theme__WEBPACK_IMPORTED_MODULE_0__.NbGlobalPhysicalPosition.TOP_RIGHT;
@@ -179,7 +179,7 @@ class DataManipulationService {
             preventDuplicates: this.preventDuplicates,
         };
         const titleContent = title ? `${title}` : '';
-        this.toastrService.show('', titleContent, config);
+        this.toastrService.show(body, titleContent, config);
     }
 }
 DataManipulationService.ɵfac = function DataManipulationService_Factory(t) { return new (t || DataManipulationService)(_angular_core__WEBPACK_IMPORTED_MODULE_1__["ɵɵinject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_0__.NbToastrService)); };
