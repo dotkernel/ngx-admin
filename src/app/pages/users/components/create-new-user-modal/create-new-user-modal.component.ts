@@ -18,13 +18,16 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
 
   selectedRole = new FormControl();
   userRoles: any;
-  adminRolesObservable: Subscription;
   checkedRoles = [];
+
+  adminRolesObservable: Subscription;
+  newUserObservable: Subscription;
 
   constructor(protected ref: NbDialogRef<CreateNewUserModalComponent>, 
     private data: DataManipulationService,
     private userService: UserServiceService,
-    private formBuilder: FormBuilder) {
+    private formBuilder: FormBuilder,
+    private userDataService: UserServiceService) {
       this.newUserForm = this.formBuilder.group({
         firstName: new FormControl('', [
           Validators.required]),
@@ -67,7 +70,20 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
         },
         roles: roleUuids
       }
-      this.ref.close(userValues);
+      this.newUserObservable = this.userDataService.createNewUser(userValues).subscribe((res) => {
+        this.data.showToast('success', 'Success!', 'User has been added.');
+        this.ref.close(true);
+      }, (err) => {
+        if(err.detail.email.isEmpty != ''){
+          this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
+        }
+        if(err.password.stringLengthTooShort != ''){
+          this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+        }
+        if(err.passwordConfirm.isEmpty != ''){
+          this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+        }
+      });
     } else {
       this.data.showToast('warning', 'The form is invalid!', '');
     }
@@ -80,6 +96,7 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.adminRolesObservable.unsubscribe();
+    this.newUserObservable?.unsubscribe();
   }
 
   getUsersRoles() {
