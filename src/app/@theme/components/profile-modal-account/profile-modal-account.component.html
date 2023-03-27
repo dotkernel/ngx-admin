@@ -1,0 +1,42 @@
+<nb-card>
+    <nb-card-header>
+        <div class="d-flex align-items-center justify-content-between">
+            <span>Account Details</span>
+            <button (click)="cancel()" nbButton shape="round" ghost status="basic"><nb-icon icon="close-outline"></nb-icon></button>
+        </div>
+    </nb-card-header>
+    <nb-card-body>
+      <form [formGroup]="accountForm">
+        <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputFirstName" class="label">First Name</label>
+                <input type="text" nbInput fullWidth id="inputFirstName" placeholder="First Name" formControlName="firstName" readonly>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputLastName" class="label">Last Name</label>
+                <input type="text" nbInput fullWidth id="inputLastName" placeholder="Last Name" formControlName="lastName" readonly>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputEmail" class="label">Email</label>
+                <input type="email" nbInput fullWidth id="inputEmail" placeholder="Email" formControlName="email" readonly>
+              </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group mt-1 d-flex flex-column justify-content-center">
+                    <label for="adminRole" class="label">Roles</label>
+                    <div class="d-flex flex-row align-items-center mt-2 roles-container">
+                      <nb-checkbox *ngFor="let role of accountRoles; first as first" [style]="!first ? 'margin-left:10px':''" [checked]="true" disabled>{{role.name}}</nb-checkbox>
+                    </div>
+                </div>
+            </div>
+          </div>
+      </form>
+    </nb-card-body>
+  </nb-card>

@@ -1,0 +1,43 @@
+<nb-card>
+    <nb-card-header>
+        <div class="d-flex align-items-center justify-content-between">
+            <span>Update admin</span>
+            <button (click)="cancel()" nbButton shape="round" ghost status="basic"><nb-icon icon="close-outline"></nb-icon></button>
+        </div>
+    </nb-card-header>
+    <nb-card-body>
+      <form [formGroup]="newAdminForm">
+        <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputFirstName" class="label">First Name</label>
+                <input type="text" nbInput fullWidth id="inputFirstName" placeholder="First Name" formControlName="firstName">
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                <label for="inputLastName" class="label">Last Name</label>
+                <input type="text" nbInput fullWidth id="inputLastName" placeholder="Last Name" formControlName="lastName">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label for="inputEmail" class="label">Email</label>
+                  <input type="email" nbInput fullWidth id="inputEmail" placeholder="Email" formControlName="email">
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group mt-1 d-flex flex-column justify-content-center">
+                    <label for="adminRole" class="label">Role</label>
+                    <div class="d-flex flex-row align-items-center mt-2 roles-container">
+                      <nb-checkbox *ngFor="let role of adminRoles; let i = index; first as first" [style]="!first ? 'margin-left:10px':''" (checkedChange)="setAdminRole($event, role.name)" [checked]="isRoleChecked[i].show">{{role.name}}</nb-checkbox>
+                    </div>
+                </div>
+              </div>
+          </div>
+          <button (click)="onSubmit($event)" disabled="{{newAdminForm.invalid}}" nbButton>Submit</button>
+      </form>
+    </nb-card-body>
+  </nb-card>

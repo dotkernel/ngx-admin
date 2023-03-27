@@ -12,6 +12,9 @@ import {
   NbSelectModule,
   NbIconModule,
   NbThemeModule,
+  NbCardModule,
+  NbInputModule,
+  NbCheckboxModule,
 } from '@nebular/theme';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { NbSecurityModule } from '@nebular/security';
@@ -19,7 +22,6 @@ import { NbSecurityModule } from '@nebular/security';
 import {
   FooterComponent,
   HeaderComponent,
-  SearchInputComponent,
   TinyMCEComponent,
 } from './components';
 import {
@@ -38,6 +40,8 @@ import { DEFAULT_THEME } from './styles/theme.default';
 import { COSMIC_THEME } from './styles/theme.cosmic';
 import { CORPORATE_THEME } from './styles/theme.corporate';
 import { DARK_THEME } from './styles/theme.dark';
+import { ProfileModalAccountComponent } from './components/profile-modal-account/profile-modal-account.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 const NB_MODULES = [
   NbLayoutModule,
@@ -52,11 +56,13 @@ const NB_MODULES = [
   NbSelectModule,
   NbIconModule,
   NbEvaIconsModule,
+  NbCardModule,
+  NbInputModule,
+  NbCheckboxModule
 ];
 const COMPONENTS = [
   HeaderComponent,
   FooterComponent,
-  SearchInputComponent,
   TinyMCEComponent,
   OneColumnLayoutComponent,
   ThreeColumnsLayoutComponent,
@@ -71,9 +77,9 @@ const PIPES = [
 ];
 
 @NgModule({
-  imports: [CommonModule, ...NB_MODULES],
+  imports: [CommonModule, ...NB_MODULES, ReactiveFormsModule],
   exports: [CommonModule, ...PIPES, ...COMPONENTS],
-  declarations: [...COMPONENTS, ...PIPES],
+  declarations: [...COMPONENTS, ...PIPES, ProfileModalAccountComponent],
 })
 export class ThemeModule {
   static forRoot(): ModuleWithProviders<ThemeModule> {

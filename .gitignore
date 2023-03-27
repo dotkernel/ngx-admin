@@ -1,9 +1,4 @@
 # compiled output
-
-# exclude package-lock.json
-package-lock.json
-
-/dist
 /tmp
 /out-tsc
 

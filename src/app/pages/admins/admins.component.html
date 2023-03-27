@@ -1,0 +1,10 @@
+<nb-card>
+    <nb-card-header>
+      Admins Table
+    </nb-card-header>
+  
+    <nb-card-body>
+      <ng2-smart-table [settings]="settings" [source]="source" (create)="createNewAdmin()" (edit)="editAdmin($event)" (delete)="deleteAdmin($event)">
+      </ng2-smart-table>
+    </nb-card-body>
+</nb-card>
