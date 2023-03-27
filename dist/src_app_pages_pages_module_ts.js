@@ -200,29 +200,7 @@ class AdminsComponent {
     createNewAdmin() {
         this.dialogService.open(_components_create_new_admin_modal_create_new_admin_modal_component__WEBPACK_IMPORTED_MODULE_1__.CreateNewAdminModalComponent, { closeOnBackdropClick: false, autoFocus: false }).onClose.subscribe((res) => {
             if (res) {
-                this.newAdminObservable = this.adminDataService.createNewAdmin(res).subscribe((res) => {
-                    this.data.showToast('success', 'Success!', 'Admin has been added.');
-                    this.getAdminList();
-                }, (err) => {
-                    if (err.firstName.isEmpty != '') {
-                        this.data.showToast('warning', 'First name inputfield error!', err.firstName.isEmpty);
-                    }
-                    if (err.lastName.isEmpty != '') {
-                        this.data.showToast('warning', 'Last name inputfield error!', err.lastName.isEmpty);
-                    }
-                    if (err.identity.isEmpty != '') {
-                        this.data.showToast('warning', 'Email inputfield error!', err.identity.isEmpty);
-                    }
-                    if (err.roles[0].isEmpty != '') {
-                        this.data.showToast('warning', 'Roles inputfield error!', err.roles[0].isEmpty);
-                    }
-                    if (err.password.stringLengthTooShort != '') {
-                        this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
-                    }
-                    if (err.passwordConfirm.isEmpty != '') {
-                        this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
-                    }
-                });
+                this.getAdminList();
             }
         });
     }
@@ -528,11 +506,12 @@ function CreateNewAdminModalComponent_ng_container_53_Template(rf, ctx) { if (rf
     _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newAdminForm.controls["confirmPassword"] == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newAdminForm.controls["confirmPassword"].errors["mustMatch"]);
 } }
 class CreateNewAdminModalComponent {
-    constructor(ref, data, adminService, formBuilder) {
+    constructor(ref, data, adminService, formBuilder, adminDataService) {
         this.ref = ref;
         this.data = data;
         this.adminService = adminService;
         this.formBuilder = formBuilder;
+        this.adminDataService = adminDataService;
         this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl();
         this.checkedRoles = [];
         this.newAdminForm = this.formBuilder.group({
@@ -575,7 +554,29 @@ class CreateNewAdminModalComponent {
                 lastName: this.newAdminForm.value.lastName,
                 roles: roleUuids
             };
-            this.ref.close(adminValues);
+            this.newAdminObservable = this.adminDataService.createNewAdmin(adminValues).subscribe((res) => {
+                this.data.showToast('success', 'Success!', 'Admin has been added.');
+                this.ref.close(true);
+            }, (err) => {
+                if (err.firstName?.isEmpty != null) {
+                    this.data.showToast('warning', 'First name inputfield error!', err.firstName?.isEmpty);
+                }
+                if (err.lastName?.isEmpty != null) {
+                    this.data.showToast('warning', 'Last name inputfield error!', err.lastName?.isEmpty);
+                }
+                if (err.identity?.isEmpty != null) {
+                    this.data.showToast('warning', 'Email inputfield error!', err.identity?.isEmpty);
+                }
+                if (err.roles[0]?.isEmpty != null) {
+                    this.data.showToast('warning', 'Roles inputfield error!', err.roles[0]?.isEmpty);
+                }
+                if (err.password?.stringLengthTooShort != null) {
+                    this.data.showToast('warning', 'Password inputfield error!', err.password?.stringLengthTooShort);
+                }
+                if (err.passwordConfirm?.isEmpty != null) {
+                    this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm?.isEmpty);
+                }
+            });
         }
         else {
             this.data.showToast('warning', 'The form is invalid!', '');
@@ -586,6 +587,7 @@ class CreateNewAdminModalComponent {
     }
     ngOnDestroy() {
         this.adminRolesObservable.unsubscribe();
+        this.newAdminObservable?.unsubscribe();
     }
     getAdminRoles() {
         this.adminRolesObservable = this.adminService.getAdminRoles().subscribe((res) => {
@@ -617,7 +619,7 @@ class CreateNewAdminModalComponent {
         }
     }
 }
-CreateNewAdminModalComponent.ɵfac = function CreateNewAdminModalComponent_Factory(t) { return new (t || CreateNewAdminModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_2__.AdminsService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder)); };
+CreateNewAdminModalComponent.ɵfac = function CreateNewAdminModalComponent_Factory(t) { return new (t || CreateNewAdminModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_2__.AdminsService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_admin_service_admins_service__WEBPACK_IMPORTED_MODULE_2__.AdminsService)); };
 CreateNewAdminModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineComponent"]({ type: CreateNewAdminModalComponent, selectors: [["ngx-create-new-admin-modal"]], decls: 56, vars: 19, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", 3, "status"], [4, "ngIf"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", 3, "status"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation", 3, "status"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checkedChange", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type", "status"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type", "status"], ["nbButton", "", 3, "disabled", "click"], ["class", "caption status-danger mb-0", 4, "ngIf"], [1, "caption", "status-danger", "mb-0"], [3, "checkedChange"]], template: function CreateNewAdminModalComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "Create new admin");
@@ -1261,11 +1263,12 @@ function CreateNewUserModalComponent_ng_container_53_Template(rf, ctx) { if (rf 
     _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵproperty"]("ngIf", ctx_r5.newUserForm.controls["confirmPassword"] == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors == null ? null : ctx_r5.newUserForm.controls["confirmPassword"].errors["mustMatch"]);
 } }
 class CreateNewUserModalComponent {
-    constructor(ref, data, userService, formBuilder) {
+    constructor(ref, data, userService, formBuilder, userDataService) {
         this.ref = ref;
         this.data = data;
         this.userService = userService;
         this.formBuilder = formBuilder;
+        this.userDataService = userDataService;
         this.selectedRole = new _angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormControl();
         this.checkedRoles = [];
         this.newUserForm = this.formBuilder.group({
@@ -1312,7 +1315,20 @@ class CreateNewUserModalComponent {
                 },
                 roles: roleUuids
             };
-            this.ref.close(userValues);
+            this.newUserObservable = this.userDataService.createNewUser(userValues).subscribe((res) => {
+                this.data.showToast('success', 'Success!', 'User has been added.');
+                this.ref.close(true);
+            }, (err) => {
+                if (err.detail.email.isEmpty != '') {
+                    this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
+                }
+                if (err.password.stringLengthTooShort != '') {
+                    this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
+                }
+                if (err.passwordConfirm.isEmpty != '') {
+                    this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
+                }
+            });
         }
         else {
             this.data.showToast('warning', 'The form is invalid!', '');
@@ -1323,6 +1339,7 @@ class CreateNewUserModalComponent {
     }
     ngOnDestroy() {
         this.adminRolesObservable.unsubscribe();
+        this.newUserObservable?.unsubscribe();
     }
     getUsersRoles() {
         this.adminRolesObservable = this.userService.getUsersRoles().subscribe((res) => {
@@ -1354,7 +1371,7 @@ class CreateNewUserModalComponent {
         }
     }
 }
-CreateNewUserModalComponent.ɵfac = function CreateNewUserModalComponent_Factory(t) { return new (t || CreateNewUserModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_2__.UserServiceService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder)); };
+CreateNewUserModalComponent.ɵfac = function CreateNewUserModalComponent_Factory(t) { return new (t || CreateNewUserModalComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_nebular_theme__WEBPACK_IMPORTED_MODULE_5__.NbDialogRef), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_services_data_manipulation_service__WEBPACK_IMPORTED_MODULE_1__.DataManipulationService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_2__.UserServiceService), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_angular_forms__WEBPACK_IMPORTED_MODULE_4__.FormBuilder), _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdirectiveInject"](_user_service_user_service_service__WEBPACK_IMPORTED_MODULE_2__.UserServiceService)); };
 CreateNewUserModalComponent.ɵcmp = /*@__PURE__*/ _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵdefineComponent"]({ type: CreateNewUserModalComponent, selectors: [["ngx-create-new-user-modal"]], decls: 56, vars: 19, consts: [[1, "d-flex", "align-items-center", "justify-content-between"], ["nbButton", "", "shape", "round", "ghost", "", "status", "basic", 3, "click"], ["icon", "close-outline"], ["autocomplete", "off", 3, "formGroup"], [1, "row"], [1, "col-sm-6"], [1, "form-group"], ["for", "inputFirstName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputFirstName", "placeholder", "First Name", "formControlName", "firstName", 3, "status"], [4, "ngIf"], ["for", "inputLastName", 1, "label"], ["type", "text", "nbInput", "", "fullWidth", "", "id", "inputLastName", "placeholder", "Last Name", "formControlName", "lastName", 3, "status"], ["for", "inputEmail", 1, "label"], ["type", "email", "nbInput", "", "fullWidth", "", "id", "inputEmail", "placeholder", "Email", "formControlName", "email", "autoComplete", "none", "role", "presentation", 3, "status"], [1, "form-group", "mt-1", "d-flex", "flex-column", "justify-content-center"], ["for", "adminRole", 1, "label"], [1, "d-flex", "flex-row", "align-items-center", "mt-2", "roles-container"], [3, "style", "checkedChange", 4, "ngFor", "ngForOf"], ["for", "password", 1, "label"], ["id", "password", "nbInput", "", "formControlName", "password", "autocomplete", "off", 3, "type", "status"], ["nbSuffix", "", "nbButton", "", "ghost", "", 3, "click"], ["pack", "eva", 3, "icon"], ["for", "confirmPassword", 1, "label"], ["id", "confirmPassword", "nbInput", "", "formControlName", "confirmPassword", "autocomplete", "off", 3, "type", "status"], ["nbButton", "", 3, "disabled", "click"], ["class", "caption status-danger mb-0", 4, "ngIf"], [1, "caption", "status-danger", "mb-0"], [3, "checkedChange"]], template: function CreateNewUserModalComponent_Template(rf, ctx) { if (rf & 1) {
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵelementStart"](0, "nb-card")(1, "nb-card-header")(2, "div", 0)(3, "span");
         _angular_core__WEBPACK_IMPORTED_MODULE_3__["ɵɵtext"](4, "Create new user");
@@ -1909,7 +1926,6 @@ class UsersComponent {
     }
     ngOnDestroy() {
         this.usersListObservable?.unsubscribe();
-        this.newUserObservable?.unsubscribe();
         this.updateUserObservable?.unsubscribe();
         this.deleteUserObservable?.unsubscribe();
     }
@@ -1923,22 +1939,7 @@ class UsersComponent {
     createNewUser() {
         this.dialogService.open(_components_create_new_user_modal_create_new_user_modal_component__WEBPACK_IMPORTED_MODULE_0__.CreateNewUserModalComponent, { closeOnBackdropClick: false, autoFocus: false }).onClose.subscribe((res) => {
             if (res) {
-                console.log(res);
-                this.newUserObservable = this.userDataService.createNewUser(res).subscribe((res) => {
-                    this.data.showToast('success', 'Success!', 'User has been added.');
-                    this.getUserList();
-                }, (err) => {
-                    console.log(err);
-                    if (err.detail.email.isEmpty != '') {
-                        this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
-                    }
-                    if (err.password.stringLengthTooShort != '') {
-                        this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
-                    }
-                    if (err.passwordConfirm.isEmpty != '') {
-                        this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
-                    }
-                });
+                this.getUserList();
             }
         });
     }
@@ -1950,7 +1951,7 @@ class UsersComponent {
                     this.data.showToast('success', 'Success!', 'User has been updated.');
                     this.getUserList();
                 }, (err) => {
-                    this.data.showToast('warning', 'Somthing went wrong', '');
+                    this.data.showToast('warning', 'Something went wrong', '');
                 });
             }
         });
