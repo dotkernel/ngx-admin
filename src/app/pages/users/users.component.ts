@@ -105,7 +105,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.usersListObservable?.unsubscribe();
-    this.newUserObservable?.unsubscribe();
     this.updateUserObservable?.unsubscribe();
     this.deleteUserObservable?.unsubscribe();
 
@@ -122,22 +121,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   createNewUser() {
     this.dialogService.open(CreateNewUserModalComponent, {closeOnBackdropClick : false, autoFocus: false}).onClose.subscribe((res) => {
       if(res) {
-        console.log(res);
-        this.newUserObservable = this.userDataService.createNewUser(res).subscribe((res) => {
-          this.data.showToast('success', 'Success!', 'User has been added.');
-          this.getUserList();
-        }, (err) => {
-          console.log(err);
-          if(err.detail.email.isEmpty != ''){
-            this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
-          }
-          if(err.password.stringLengthTooShort != ''){
-            this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
-          }
-          if(err.passwordConfirm.isEmpty != ''){
-            this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
-          }
-        });
+        this.getUserList();
       }
     });
   }
@@ -150,7 +134,7 @@ export class UsersComponent implements OnInit, OnDestroy {
           this.data.showToast('success','Success!', 'User has been updated.');
           this.getUserList();
         }, (err) => {
-          this.data.showToast('warning', 'Somthing went wrong', '')
+          this.data.showToast('warning', 'Something went wrong', '');
         });
       }
     });

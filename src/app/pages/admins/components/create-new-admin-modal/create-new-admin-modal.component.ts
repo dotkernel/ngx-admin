@@ -19,12 +19,15 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
   selectedRole = new FormControl();
   adminRoles: any;
   checkedRoles = [];
+
   adminRolesObservable: Subscription;
+  newAdminObservable: Subscription;
 
   constructor(protected ref: NbDialogRef<CreateNewAdminModalComponent>, 
     private data: DataManipulationService,
     private adminService: AdminsService,
-    private formBuilder: FormBuilder) {
+    private formBuilder: FormBuilder,
+    private adminDataService: AdminsService) {
       this.newAdminForm = this.formBuilder.group({
         firstName: new FormControl('', [
           Validators.required]),
@@ -63,7 +66,31 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
         lastName: this.newAdminForm.value.lastName,
         roles: roleUuids
       }
-      this.ref.close(adminValues);
+
+      this.newAdminObservable = this.adminDataService.createNewAdmin(adminValues).subscribe((res) => {
+        this.data.showToast('success','Success!', 'Admin has been added.');
+        this.ref.close(true);
+      }, (err) => {
+        if(err.firstName?.isEmpty != null){
+          this.data.showToast('warning', 'First name inputfield error!', err.firstName?.isEmpty);
+        }
+        if(err.lastName?.isEmpty != null){
+          this.data.showToast('warning', 'Last name inputfield error!', err.lastName?.isEmpty);
+        }
+        if(err.identity?.isEmpty != null){
+          this.data.showToast('warning', 'Email inputfield error!', err.identity?.isEmpty);
+        }
+        if(err.roles[0]?.isEmpty != null){
+          this.data.showToast('warning', 'Roles inputfield error!', err.roles[0]?.isEmpty);
+        }
+        if(err.password?.stringLengthTooShort != null){
+          this.data.showToast('warning', 'Password inputfield error!', err.password?.stringLengthTooShort);
+        }
+        if(err.passwordConfirm?.isEmpty != null){
+          this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm?.isEmpty);
+        }
+      });
+      
     } else {
       this.data.showToast('warning', 'The form is invalid!', '');
     }
@@ -76,6 +103,7 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.adminRolesObservable.unsubscribe();
+    this.newAdminObservable?.unsubscribe();
   }
 
   getAdminRoles() {

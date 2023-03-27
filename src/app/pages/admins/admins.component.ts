@@ -116,29 +116,7 @@ export class AdminsComponent implements OnInit, OnDestroy {
   createNewAdmin() {
     this.dialogService.open(CreateNewAdminModalComponent, {closeOnBackdropClick : false, autoFocus: false}).onClose.subscribe((res) => {
       if(res) {
-        this.newAdminObservable = this.adminDataService.createNewAdmin(res).subscribe((res) => {
-          this.data.showToast('success','Success!', 'Admin has been added.');
-          this.getAdminList();
-        }, (err) => {
-          if(err.firstName.isEmpty != ''){
-            this.data.showToast('warning', 'First name inputfield error!', err.firstName.isEmpty);
-          }
-          if(err.lastName.isEmpty != ''){
-            this.data.showToast('warning', 'Last name inputfield error!', err.lastName.isEmpty);
-          }
-          if(err.identity.isEmpty != ''){
-            this.data.showToast('warning', 'Email inputfield error!', err.identity.isEmpty);
-          }
-          if(err.roles[0].isEmpty != ''){
-            this.data.showToast('warning', 'Roles inputfield error!', err.roles[0].isEmpty);
-          }
-          if(err.password.stringLengthTooShort != ''){
-            this.data.showToast('warning', 'Password inputfield error!', err.password.stringLengthTooShort);
-          }
-          if(err.passwordConfirm.isEmpty != ''){
-            this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm.isEmpty);
-          }
-        });
+        this.getAdminList();
       }
     });
   }
