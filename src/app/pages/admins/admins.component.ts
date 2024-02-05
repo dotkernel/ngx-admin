@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NbDialogService } from '@nebular/theme';
-import { LocalDataSource } from 'ng2-smart-table';
+import { LocalDataSource } from 'angular2-smart-table';
 import { Observable, Subscription } from 'rxjs';
 import { ApiWraperService } from '../../services/api-wraper.service';
 import { DataManipulationService } from '../../services/data-manipulation.service';
@@ -20,17 +20,17 @@ export class AdminsComponent implements OnInit, OnDestroy {
   settings = {
     mode: 'external',
     add: {
-      addButtonContent: '<i class="nb-plus"></i>',
+      addButtonContent: '<i class="nb-plus fa-2x"></i>',
       createButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
     },
     edit: {
-      editButtonContent: '<i class="nb-edit"></i>',
+      editButtonContent: '<i class="nb-edit fa-2x"></i>',
       saveButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
     },
     delete: {
-      deleteButtonContent: '<i class="nb-trash"></i>',
+      deleteButtonContent: '<i class="nb-trash fa-2x"></i>',
       confirmDelete: true,
     },
     columns: {
@@ -88,10 +88,10 @@ export class AdminsComponent implements OnInit, OnDestroy {
   reportErrorObservable: Subscription;
   adminRoles: any;
 
-  constructor(private adminDataService: AdminsService, 
-    public data: DataManipulationService,
-    private dialogService: NbDialogService,
-    private apiWraper: ApiWraperService) {}
+  constructor(private adminDataService: AdminsService,
+              public data: DataManipulationService,
+              private dialogService: NbDialogService,
+              private apiWraper: ApiWraperService) {}
 
   ngOnInit(): void {
     this.getAdminList();
@@ -123,7 +123,7 @@ export class AdminsComponent implements OnInit, OnDestroy {
 
   editAdmin(event){
     const adminData = event.data;
-   
+
     this.dialogService.open(UpdateAdminModalComponent, {closeOnBackdropClick : false, autoFocus : false , context: {adminData: adminData}}).onClose.subscribe((res) => {
       if(res) {
         this.updateAdminObservable = this.adminDataService.updateAdmin(res, adminData.uuid).subscribe((res) => {
