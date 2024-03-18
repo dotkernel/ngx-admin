@@ -23,7 +23,7 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
   adminRolesObservable: Subscription;
   newAdminObservable: Subscription;
 
-  constructor(protected ref: NbDialogRef<CreateNewAdminModalComponent>, 
+  constructor(protected ref: NbDialogRef<CreateNewAdminModalComponent>,
     private data: DataManipulationService,
     private adminService: AdminsService,
     private formBuilder: FormBuilder,
@@ -42,7 +42,7 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
             Validators.required]),
       }, {validator: MustMatch('password','confirmPassword')});
     }
- 
+
 
   cancel() {
     this.ref.close();
@@ -71,6 +71,7 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
         this.data.showToast('success','Success!', 'Admin has been added.');
         this.ref.close(true);
       }, (err) => {
+        this.data.showToast('danger', 'Error!', err);
         if(err.firstName?.isEmpty != null){
           this.data.showToast('warning', 'First name inputfield error!', err.firstName?.isEmpty);
         }
@@ -90,11 +91,11 @@ export class CreateNewAdminModalComponent implements OnInit, OnDestroy {
           this.data.showToast('warning', 'Confirm password inputfield error!', err.passwordConfirm?.isEmpty);
         }
       });
-      
+
     } else {
       this.data.showToast('warning', 'The form is invalid!', '');
     }
-    
+
   }
 
   ngOnInit(): void {
