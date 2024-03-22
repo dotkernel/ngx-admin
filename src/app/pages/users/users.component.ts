@@ -1,13 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NbDialogService } from '@nebular/theme';
-import { LocalDataSource } from 'ng2-smart-table';
-import { Subscription } from 'rxjs-compat';
+import { LocalDataSource } from 'angular2-smart-table';
 import { DataManipulationService } from '../../services/data-manipulation.service';
 import { CreateNewUserModalComponent } from './components/create-new-user-modal/create-new-user-modal.component';
 import { DeleteUserModalComponent } from './components/delete-user-modal/delete-user-modal.component';
 import { UpdateUserModalComponent } from './components/update-user-modal/update-user-modal.component';
 import { UserDetailRendererComponent } from './components/user-detail-renderer/user-detail-renderer.component';
 import { UserServiceService } from './user-service/user-service.service';
+import {Settings} from "angular2-smart-table";
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'ngx-users',
@@ -18,17 +19,17 @@ export class UsersComponent implements OnInit, OnDestroy {
   settings = {
     mode: 'external',
     add: {
-      addButtonContent: '<i class="nb-plus"></i>',
+      addButtonContent: '<i class="nb-plus fa-2x"></i>',
       createButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
     },
     edit: {
-      editButtonContent: '<i class="nb-edit"></i>',
+      editButtonContent: '<i class="nb-edit fa-2x"></i>',
       saveButtonContent: '<i class="nb-checkmark"></i>',
       cancelButtonContent: '<i class="nb-close"></i>',
     },
     delete: {
-      deleteButtonContent: '<i class="nb-trash"></i>',
+      deleteButtonContent: '<i class="nb-trash fa-2x"></i>',
       confirmDelete: true,
     },
     columns: {
@@ -96,8 +97,8 @@ export class UsersComponent implements OnInit, OnDestroy {
   deleteUserObservable: Subscription;
 
   constructor(private userDataService: UserServiceService,
-    public data: DataManipulationService,
-    private dialogService: NbDialogService) {}
+              public data: DataManipulationService,
+              private dialogService: NbDialogService) {}
 
   ngOnInit(): void {
     this.getUserList();

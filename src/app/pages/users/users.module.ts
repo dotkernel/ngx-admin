@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsersComponent } from './users.component';
 import { NbButtonModule, NbCardModule, NbCheckboxModule, NbFormFieldModule, NbIconModule, NbInputModule, NbSelectModule } from '@nebular/theme';
-import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { Angular2SmartTableModule } from 'angular2-smart-table';
 import { ThemeModule } from '../../@theme/theme.module';
 import { UserDetailRendererComponent } from './components/user-detail-renderer/user-detail-renderer.component';
 import { CreateNewUserModalComponent } from './components/create-new-user-modal/create-new-user-modal.component';
@@ -26,7 +26,7 @@ import { DeleteUserModalComponent } from './components/delete-user-modal/delete-
     NbIconModule,
     NbInputModule,
     ThemeModule,
-    Ng2SmartTableModule,
+    Angular2SmartTableModule,
     NbSelectModule,
     NbFormFieldModule,
     NbButtonModule,

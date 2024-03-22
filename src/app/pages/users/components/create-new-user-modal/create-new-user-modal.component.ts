@@ -23,7 +23,7 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
   adminRolesObservable: Subscription;
   newUserObservable: Subscription;
 
-  constructor(protected ref: NbDialogRef<CreateNewUserModalComponent>, 
+  constructor(protected ref: NbDialogRef<CreateNewUserModalComponent>,
     private data: DataManipulationService,
     private userService: UserServiceService,
     private formBuilder: FormBuilder,
@@ -42,7 +42,7 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
             Validators.required]),
       }, {validator: MustMatch('password','confirmPassword')});
     }
- 
+
 
   cancel() {
     this.ref.close();
@@ -74,6 +74,7 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
         this.data.showToast('success', 'Success!', 'User has been added.');
         this.ref.close(true);
       }, (err) => {
+        this.data.showToast('danger', 'Error!', err);
         if(err.detail.email.isEmpty != ''){
           this.data.showToast('warning', 'Email inputfield error!', err.detail.email.isEmpty);
         }
@@ -87,7 +88,6 @@ export class CreateNewUserModalComponent implements OnInit, OnDestroy {
     } else {
       this.data.showToast('warning', 'The form is invalid!', '');
     }
-    
   }
 
   ngOnInit(): void {

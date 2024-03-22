@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ViewCell } from 'ng2-smart-table';
+import { ViewCell } from 'angular2-smart-table';
 
 @Component({
   selector: 'ngx-admin-detail-renderer',
@@ -18,7 +18,7 @@ export class AdminDetailRendererComponent implements OnInit, ViewCell {
   rowData: any;
 
   constructor() { }
-  
+
 
   ngOnInit(): void {
     this.adminRoles = this.rowData.roles;

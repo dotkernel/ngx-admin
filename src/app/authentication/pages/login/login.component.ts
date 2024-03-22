@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DataManipulationService } from '../../../services/data-manipulation.service';
-import { AuthService } from '../../services/auth.service';
+import {Component, OnInit} from '@angular/core';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {DataManipulationService} from '../../../services/data-manipulation.service';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'ngx-login',
@@ -49,15 +49,15 @@ export class LoginComponent implements OnInit {
       return;
     }
     this.loading = true;
-    this.authService.login(this.f.email.value, this.f.password.value).subscribe(() => {
-          this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/pages';
-          this.router.navigate([this.returnUrl]);
-        },
-        (err) => {
-          // console.log(err);
-          
-          this.data.showToast('warning', 'Error to sign in!', '');
-          this.loading = false;
-        });
+    this.authService.login(this.f.email.value, this.f.password.value).subscribe({
+      next: res => {
+        this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/pages';
+        this.router.navigate([this.returnUrl]);
+      },
+      error: err => {
+        this.data.showToast('warning', 'Error to sign in!', '');
+        this.loading = false;
+      }
+    });
   }
 }

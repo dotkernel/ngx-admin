@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AdminsComponent } from './admins.component';
 import { NbButtonModule, NbCardModule, NbCheckboxModule, NbFormFieldModule, NbIconModule, NbInputModule, NbSelectModule } from '@nebular/theme';
 import { ThemeModule } from '../../@theme/theme.module';
-import { Ng2SmartTableModule } from 'ng2-smart-table';
+import {Angular2SmartTableModule} from "angular2-smart-table";
 import { AdminDetailRendererComponent } from './components/admin-detail-renderer/admin-detail-renderer.component';
 import { CreateNewAdminModalComponent } from './components/create-new-admin-modal/create-new-admin-modal.component';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -26,7 +26,7 @@ import { DeleteAdminModalComponent } from './components/delete-admin-modal/delet
     NbIconModule,
     NbInputModule,
     ThemeModule,
-    Ng2SmartTableModule,
+    Angular2SmartTableModule,
     NbSelectModule,
     NbFormFieldModule,
     NbButtonModule,
